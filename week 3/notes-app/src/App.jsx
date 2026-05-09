@@ -3,10 +3,10 @@ import { useState } from "react";
 
 function App() {
   const [notes, setNotes] = useState([
-    { id: 1, title: "Morning Ideas", content: "Build something cool with React." },
-    { id: 2, title: "Shopping", content: "Milk, Coffee, Bread" },
-    { id: 3, title: "Learning", content: "Practice hooks and components." },
-  ]);
+        { id: 1, title: "Note 1", content: "Content 1" },
+        { id: 2, title: "Note 2", content: "Content 2" },
+        { id: 3, title: "Note 3", content: "Content 3" }
+    ]);
 
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
