@@ -82,3 +82,13 @@ console.log(inventory.getLowStock());
 console.log(inventory.getTotalValue());
 
 console.log(inventory.removeOutOfStock());
+
+// Product {id: 1778339699937.815, name: 'Laptop', price: 800, quantity: 5, createdAt: Sat May 09 2026 20:59:59 GMT+0545 (Nepal Time)}
+// inventory.js:70 Product {id: 1778339699938.9019, name: 'Mouse', price: 20, quantity: 15, createdAt: Sat May 09 2026 20:59:59 GMT+0545 (Nepal Time)}
+// inventory.js:72 Product {id: 1778339699938.073, name: 'Keyboard', price: 50, quantity: 0, createdAt: Sat May 09 2026 20:59:59 GMT+0545 (Nepal Time)}
+// inventory.js:74 (3) [Product, Product, Product]
+// inventory.js:76 Product {id: 1778339699937.815, name: 'Laptop', price: 800, quantity: 5, createdAt: Sat May 09 2026 20:59:59 GMT+0545 (Nepal Time)}createdAt: Sat May 09 2026 20:59:59 GMT+0545 (Nepal Time) {}id: 1778339699937.815name: "Laptop"price: 800quantity: 8[[Prototype]]: Object
+// inventory.js:78 Product {id: 1778339699937.815, name: 'Laptop', price: 800, quantity: 8, createdAt: Sat May 09 2026 20:59:59 GMT+0545 (Nepal Time)}
+// inventory.js:80 (2) [Product, Product]
+// inventory.js:82 6700
+// inventory.js:84 
