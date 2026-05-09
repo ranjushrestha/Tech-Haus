@@ -14,10 +14,7 @@ function App() {
   function addNote(e) {
     e.preventDefault();
 
-    if (!title || !content) {
-      alert("Fill all fields");
-      return;
-    }
+    if (!title || !content) return
 
     const newNote = {
       id: Date.now(),
