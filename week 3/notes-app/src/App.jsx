@@ -22,7 +22,7 @@ function App() {
       content,
     };
 
-    setNotes([newNote, ...notes]);
+    setNotes((prevNotes) => [newNote, ...prevNotes]);
 
     setTitle("");
     setContent("");

@@ -1,6 +1,6 @@
-const readline = require("readline");
+const readline = require("readline"); // read input in terminal line byline
 
-const rl = readline.createInterface({
+const rl = readline.createInterface({// process input and output in terminal; used to ask question and close()
   input: process.stdin,
   output: process.stdout,
 });
@@ -18,13 +18,13 @@ function showMenu() {
 
   rl.question("\nChoose (1-7): ", (choice) => {
 
-    if (choice === "7") {
+    if (choice === "7") {//program ends no further calculation
       console.log("Calculator closed.");
       rl.close();
       return;
     }
 
-    if (choice === "6") {
+    if (choice === "6") {// use one-number logic
 
       rl.question("Enter number: ", (num) => {
 
@@ -36,11 +36,12 @@ function showMenu() {
 
       });
 
-    } else {
+    } else { //→ use two-number logic
 
       rl.question("Enter first number: ", (num1) => {
-
+           // runs after first input
         rl.question("Enter second number: ", (num2) => {
+           // runs after second input
 
           num1 = Number(num1);
           num2 = Number(num2);
