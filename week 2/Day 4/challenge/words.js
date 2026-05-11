@@ -2,7 +2,7 @@ function countWords(text) {
 
     // Return Map of word counts
     const words = text.toLowerCase().split(" "); // 
-
+  // store count
     const wordMap = new Map();
 
     for (const word of words) {
