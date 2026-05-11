@@ -2,8 +2,9 @@
 function myMap(arr, fn) {
     const result = [];
 
-    for (let i = 0; i < arr.length; i++) {
+    for (let i = 0; i < arr.length; i++) { 
         result[result.length] = fn(arr[i], i, arr);
+        //result.push(fn(arr[i], i, arr))
     }
 
     return result;
@@ -16,6 +17,7 @@ function myFilter(arr, fn) {
     for (let i = 0; i < arr.length; i++) {
         if (fn(arr[i], i, arr)) {
             result[result.length] = arr[i];
+            //result.push(arr[i])
         }
     }
 
@@ -27,11 +29,11 @@ function myReduce(arr, fn, initial) {
     let accumulator;
     let startIndex;
 
-    if (initial !== undefined) {
+    if (initial !== undefined) {// if initial not given take first index 
         accumulator = initial;
         startIndex = 0;
     } else {
-        accumulator = arr[0];
+        accumulator = arr[0]; 
         startIndex = 1;
     }
 
@@ -44,8 +46,8 @@ function myReduce(arr, fn, initial) {
 
 // myFind
 function myFind(arr, fn) {
-    for (let i = 0; i < arr.length; i++) {
-        if (fn(arr[i], i, arr)) {
+    for (let i = 0; i < arr.length; i++) { 
+        if (fn(arr[i], i, arr)) {// if condition is true return first item
             return arr[i];
         }
     }
@@ -56,7 +58,7 @@ function myFind(arr, fn) {
 // myIncludes
 function myIncludes(arr, value) {
     for (let i = 0; i < arr.length; i++) {
-        if (arr[i] === value) {
+        if (arr[i] === value) { // if search item matches return true
             return true;
         }
     }

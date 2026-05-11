@@ -53,10 +53,12 @@ function getHonorRoll(studentsGradeData) {
         const average = getAverage(studentsGradeData[i].scores);
 
         if (average >= 90) {
-            result[result.length] = {
-                ...studentsGradeData[i],
-                average: Number(average.toFixed(2))
-            };
+            // result[result.length] = {
+            //     ...studentsGradeData[i],
+            //     average: Number(average.toFixed(2))
+            // };
+            result.push({...studentsGradeData[i], average: Number(average.toFixed(2) )
+            });
         }
     }
 
@@ -70,10 +72,12 @@ function getPassing(studentsGradeData) {
         const average = getAverage(studentsGradeData[i].scores);
 
         if (average >= 70) {
-            result[result.length] = {
-                ...studentsGradeData[i],
-                average: Number(average.toFixed(2))
-            };
+            // result[result.length] = {
+            //     ...studentsGradeData[i],
+            //     average: Number(average.toFixed(2))
+            // };
+            result.push({...studentsGradeData[i], average: Number(average.toFixed(2) )
+            });
         }
     }
 
@@ -87,15 +91,18 @@ function getFailing(studentsGradeData) {
         const average = getAverage(studentsGradeData[i].scores);
 
         if (average < 70) {
-            result[result.length] = {
-                ...studentsGradeData[i],
-                average: Number(average.toFixed(2))
-            };
+            // result[result.length] = {
+            //     ...studentsGradeData[i],
+                // average: Number(average.toFixed(2))
+                result.push({...studentsGradeData[i], average: Number(average.toFixed(2) )
+            });
         }
     }
 
     return result;
 }
+
+
 
 console.log(getHonorRoll(studentsGradeData));
 //{name: 'Charlie', scores: Array(3), average: 97.67}
