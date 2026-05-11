@@ -3,10 +3,10 @@ function analyze(text) {
   const wordCount = text.trim().split(/\s+/).length;
 
   // - charCount: characters (no spaces)
-  const charCount = text.replace(/\s/g, "").length;
+  const charCount = text.replace(/\s/g, "").length; // replace to remove spaces
 
   // - uniqueChars: unique characters
-  const uniqueChars = [...new Set(text)];
+  const uniqueChars = [...new Set(text)]; // [...] to spread into array
   // - reverse: reversed string
   const reverse = text.split("").reverse().join("");
 
@@ -24,39 +24,19 @@ function analyze(text) {
 
 console.log(analyze("hello world"));
 
-// Object
-// charCount
-// :
-// 10
-// isPalindrome
-// :
-// false
-// reverse
-// :
-// "dlrow olleh"
-// uniqueChars
-// :
-// (8) ['h', 'e', 'l', 'o', ' ', 'w', 'r', 'd']
-// wordCount
-// :
-// 2
+
+// charCount:10
+// isPalindrome:false
+// reverse:"dlrow olleh"
+// uniqueChars:(8) ['h', 'e', 'l', 'o', ' ', 'w', 'r', 'd']
+// wordCount:2
 console.log(analyze("racecar"));
 
-// charCount
-// : 
-// 7
-// isPalindrome
-// : 
-// true
-// reverse
-// : 
-// "racecar"
-// uniqueChars
-// : 
-// Array(4)
-// 0
-// : 
-// "r"
+// charCount : 7
+// isPalindrome: true
+// reverse: "racecar"
+// uniqueChars: Array(4)
+// 0: "r"
 // 1
 // : 
 // "a"
