@@ -9,7 +9,7 @@ function countWords(text) {
 
         if (wordMap.has(word)) { //if wordMap has word get the prev count then add 1 to it
             wordMap.set(word, wordMap.get(word) + 1);
-        } else {// if wordMap doesnt have word c=set count to 1
+        } else {// if wordMap doesnt have word set count to 1
             wordMap.set(word, 1);
         }
 

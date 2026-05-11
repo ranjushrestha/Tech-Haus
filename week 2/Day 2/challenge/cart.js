@@ -23,14 +23,14 @@ const getSubtotal = (cart) => {
 console.log(getSubtotal(cart)); //15
 
 const getTax = (cart, tax) => {
-  const total = getSubtotal(cart);
+  const total = getSubtotal(cart); // use getSubtotal function
   return total * tax;
 };
 console.log(getTax(cart, 0.1)); //1.5
 
 function getTotal(cart, taxRate) {
-  const subtotal = getSubtotal(cart);
-  const tax = getTax(cart, 0.1);
+  const subtotal = getSubtotal(cart); // use getSubtotal function
+  const tax = getTax(cart, 0.1); // use getTax function 
 
   return subtotal + tax;
 }

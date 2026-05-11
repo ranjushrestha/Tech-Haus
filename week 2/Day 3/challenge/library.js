@@ -24,29 +24,34 @@ class Library {
 
     removeBook(title) {
         // Remove by title
-        const result = [];
+        // const result = [];
 
-        for (let i = 0; i < this.books.length; i++) {
-            if (this.books[i].title !== title) {
-                result[result.length] = this.books[i];
-            }
-        }
+        // for (let i = 0; i < this.books.length; i++) {
+        //     if (this.books[i].title !== title) { //if title matches removes it and keep remaining books
+        //         result[result.length] = this.books[i];
+        //     }
+        // }
 
-        this.books = result;
-        console.log("removed")
+        // this.books = result;
+
+        this.book = this.books.filter((book) => book.title !== title )
+
+         console.log("removed")
     }
 
     findByAuthor(author) {
          // Find all books by author
-        const result = [];
+        // const result = [];
 
-        for (let i = 0; i < this.books.length; i++) {
-            if (this.books[i].author === author) {
-                result[result.length] = this.books[i];
-            }
-        }
+        // for (let i = 0; i < this.books.length; i++) {
+        //     if (this.books[i].author === author) {
+        //         result[result.length] = this.books[i];
+        //     }
+        // }
 
-        return result;
+        // return result;
+          return this.books.filter((book) => book.author === author )
+          
     }
 
     findByYear(year) {
@@ -86,3 +91,5 @@ console.log(library.findByYear(2019)); //Book {title: 'Digital Minimalism', auth
 library.removeBook("Atomic Habits"); //removed
 
 console.log(library.getBookCount()); //2
+
+
