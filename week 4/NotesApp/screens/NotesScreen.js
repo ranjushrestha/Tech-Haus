@@ -7,7 +7,12 @@ import {
   TouchableOpacity,
   FlatList,
   StyleSheet,
+  KeyboardAvoidingView,
+  Platform,
+  TouchableWithoutFeedback,
+  Keyboard,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function NotesScreen() {
   const [notes, setNotes] = useState([]);
@@ -15,57 +20,64 @@ export default function NotesScreen() {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
 
-  function addNote() {
-    if (!title.trim() || !content.trim()) {
-      return;
-    }
-    const newNote = {
-      id: Date.now().toString(),
-      title: title.trim(),
-      content: content.trim(),
-    };
-
-    setNotes([newNote, ...notes]);
-
-    setTitle("");
-    setContent("");
+function addNote() {
+  if (!title.trim() || !content.trim()) {
+    return;
   }
 
-  return (
-    <View style={styles.container}>
-      <Text style={styles.header}>My Notes</Text>
+  const newNote = {
+    id: Date.now().toString(),
+    title: title.trim(),
+    content: content.trim(),
+  };
 
-      <TextInput
-        style={styles.input}
-        placeholder="Title"
-        value={title}
-        onChangeText={setTitle}
-      />
+  setNotes(prevNotes => [newNote, ...prevNotes]);
 
-      <TextInput
-        style={[styles.input, styles.contentInput]}
-        placeholder="Content"
-        value={content}
-        onChangeText={setContent}
-        multiline
-      />
+  setTitle("");
+  setContent("");
+}
+return (
+  <SafeAreaView style={styles.container}>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={styles.container}
+      >
+        <Text style={styles.header}>My Notes</Text>
 
-      <TouchableOpacity style={styles.button} onPress={addNote}>
-        <Text style={styles.buttonText}>Save Note</Text>
-      </TouchableOpacity>
+        <TextInput
+          style={styles.input}
+          placeholder="Title"
+          value={title}
+          onChangeText={setTitle}
+        />
 
-      <FlatList
-        data={notes}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <View style={styles.noteCard}>
-            <Text style={styles.noteTitle}>{item.title}</Text>
-            <Text>{item.content}</Text>
-          </View>
-        )}
-      />
-    </View>
-  );
+        <TextInput
+          style={[styles.input, styles.contentInput]}
+          placeholder="Content"
+          value={content}
+          onChangeText={setContent}
+          multiline
+        />
+
+        <TouchableOpacity style={styles.button} onPress={addNote}>
+          <Text style={styles.buttonText}>Save Note</Text>
+        </TouchableOpacity>
+
+        <FlatList
+          data={notes}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <View style={styles.noteCard}>
+              <Text style={styles.noteTitle}>{item.title}</Text>
+              <Text>{item.content}</Text>
+            </View>
+          )}
+        />
+      </KeyboardAvoidingView>
+    </TouchableWithoutFeedback>
+  </SafeAreaView>
+);
 }
 
 const styles = StyleSheet.create({
@@ -89,7 +101,7 @@ const styles = StyleSheet.create({
   },
 
   contentInput: {
-    height: 100,
+  height: "100",
     textAlignVertical: "top",
   },
 
@@ -121,3 +133,5 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
 });
+
+

@@ -51,20 +51,20 @@ queue.enqueue("Task 1");
 queue.enqueue("Task 2");
 queue.enqueue("Task 3");
 
-console.log(queue.tasks);
+console.log(queue.tasks); //['Task 1', 'Task 2', 'Task 3']
 
-console.log(queue.dequeue());
+console.log(queue.dequeue());//Task 1
 
-console.log(queue.tasks);
+console.log(queue.tasks);// ['Task 2', 'Task 3']
 
-console.log(queue.peek());
+console.log(queue.peek());//Task 2
 
-console.log(queue.size());
+console.log(queue.size());//2
 
-console.log(queue.isEmpty());
+console.log(queue.isEmpty());//false
 
 queue.clear();
 
-console.log(queue.tasks);
+console.log(queue.tasks);//[]
 
-console.log(queue.isEmpty());
+console.log(queue.isEmpty());//true

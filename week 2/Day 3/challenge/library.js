@@ -33,6 +33,7 @@ class Library {
         }
 
         this.books = result;
+        console.log("removed")
     }
 
     findByAuthor(author) {
@@ -75,11 +76,13 @@ library.addBook(book1);
 library.addBook(book2);
 library.addBook(book3);
 
-console.log(book1.getInfo());
-console.log(library.getBookCount());
-console.log(library.findByAuthor("Orwell"));
-console.log(library.findByYear(2018));
+console.log(book1.getInfo()); //Atomic Habits by Orwell (2018)
+console.log(library.getBookCount()); //3
+console.log(library.findByAuthor("Orwell")); //Book {title: 'Atomic Habits', author: 'Orwell', year: 2018}
 
-library.removeBook("Atomic Habits");
 
-console.log(library.getBookCount());
+console.log(library.findByYear(2019)); //Book {title: 'Digital Minimalism', author: 'Cal Newport', year: 2019}
+
+library.removeBook("Atomic Habits"); //removed
+
+console.log(library.getBookCount()); //2
