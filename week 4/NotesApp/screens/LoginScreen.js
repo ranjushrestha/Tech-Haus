@@ -29,6 +29,7 @@ export default function App({ navigation }) {
   return (
     <SafeAreaView style={styles.container}>
       <Text style={styles.sigInText}>Sign In</Text>
+      <Text>Notes</Text>
 
       <View style={styles.form}>
         <TextInput
