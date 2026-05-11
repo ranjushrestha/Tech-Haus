@@ -6,24 +6,25 @@ class TaskQueue {
     enqueue(task) {
         // Add to end
         this.tasks[this.tasks.length] = task;
+        //this.tasks.push(task)
     }
 
     dequeue() {
         // Remove first item
-        if (this.isEmpty()) {
+        if (this.isEmpty()) { // if task is empty return undefined
             return undefined;
         }
 
-        const firstTask = this.tasks[0];
+        const firstTask = this.tasks[0]; // store first task
         const result = [];
 
-        for (let i = 1; i < this.tasks.length; i++) {
+        for (let i = 1; i < this.tasks.length; i++) { 
             result[result.length] = this.tasks[i];
         }
 
-        this.tasks = result;
+        this.tasks = result; //store task after removing first task
 
-        return firstTask;
+        return firstTask; // return first task
     }
 
     peek() {
