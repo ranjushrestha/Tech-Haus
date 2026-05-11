@@ -11,6 +11,7 @@ export default function HomeScreen({ navigation }) {
       >
         <Text style={styles.buttonText}>Go To Notes</Text>
       </TouchableOpacity>
+     
     </View>
   );
 }
@@ -33,6 +34,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#000000",
     padding: 15,
     borderRadius: 8,
+    margin: 8
   },
 
   buttonText: {
@@ -40,3 +42,6 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
 });
+
+
+
