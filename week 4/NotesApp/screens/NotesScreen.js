@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import {
   View,
   Text,
@@ -12,11 +12,29 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-export default function NotesScreen({ navigation }) {
-  const [notes, setNotes] = useState([]);
+export default function NotesScreen({ navigation, notes, setNotes }) {
+  const [refreshing, setRefreshing] = useState(false)
+  
   const [isEditId, setIsEditId] = useState(null);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+
+ const onRefresh = useCallback(() => {
+  setRefreshing(true);
+
+
+  //fetchNotes()
+  setTimeout(() => {
+    setNotes((prev) =>
+      prev.map((note) => ({
+        ...note,
+        content: note.content + Math.floor(Math.random() * 10),
+      }))
+    );
+
+    setRefreshing(false);
+  }, 1000);
+}, []);
 
   function addNote() {
     if (!title.trim() || !content.trim()) return;
@@ -26,8 +44,8 @@ export default function NotesScreen({ navigation }) {
         prev.map((item) =>
           item.id === isEditId
             ? { ...item, title: title.trim(), content: content.trim() }
-            : item
-        )
+            : item,
+        ),
       );
       setIsEditId(null);
     } else {
@@ -40,6 +58,8 @@ export default function NotesScreen({ navigation }) {
       setNotes((prevNotes) => [newNote, ...prevNotes]);
     }
 
+    
+
     setTitle("");
     setContent("");
   }
@@ -50,29 +70,34 @@ export default function NotesScreen({ navigation }) {
     setContent(item.content);
   };
 
-  const handleView = (item) => {
-    navigation.push("ViewNote", {
-      note: item,
-    });
-  };
 
-  const handleDelete = (item) => {
-    setNotes((prev) => prev.filter((note) => note.id !== item.id));
 
-    if (isEditId === item.id) {
-      setIsEditId(null);
-      setTitle("");
-      setContent("");
-    }
-  };
-
+ 
   return (
     <SafeAreaView style={styles.safeArea}>
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={styles.container}
       >
-        <Text style={styles.header}>My Notes</Text>
+        <View style={{flexDirection:'row', alignItems:'center', justifyContent:'space-between',marginBottom: 20,}}>
+           <Text style={styles.header}> Notes</Text>
+           <Pressable
+          style={{
+            backgroundColor: "blue",
+            padding: 8,
+            width: "80",
+            borderRadius: 20,
+          }}
+          onPress={() => navigation.push("Login")}
+        >
+          <Text
+            style={{ color: "white", fontWeight: "bold", textAlign: "center" }}
+          >
+            Sign out
+          </Text>
+        </Pressable>
+        </View>
+       
 
         <TextInput
           style={styles.input}
@@ -95,13 +120,21 @@ export default function NotesScreen({ navigation }) {
           </Text>
         </TouchableOpacity>
 
-        <FlatList
+        {/* {notes.length === 0 && (
+          <View style={styles.emptyTextContainer}>
+            <Text>No notes yet!</Text>
+          </View>
+        )} */}
+
+        {/* <FlatList
           style={styles.list}
           contentContainerStyle={styles.listContent}
           data={notes}
           keyExtractor={(item) => item.id}
+          refreshing={refreshing}
+          onRefresh={onRefresh}
           keyboardShouldPersistTaps="handled"
-          keyboardDismissMode="on-drag"
+          keyboardDismissMode="on-drag" //dismiss keyboard when scrolling
           showsVerticalScrollIndicator={false}
           renderItem={({ item }) => (
             <View style={styles.noteCard}>
@@ -113,19 +146,13 @@ export default function NotesScreen({ navigation }) {
                   <Text style={styles.actionText}>Edit</Text>
                 </Pressable>
 
-                <Pressable onPress={() => handleView(item)}>
-                  <Text style={styles.actionText}>View</Text>
-                </Pressable>
-
-                <Pressable onPress={() => handleDelete(item)}>
-                  <Text style={[styles.actionText, styles.deleteText]}>
-                    Delete
-                  </Text>
-                </Pressable>
+              
               </View>
             </View>
           )}
-        />
+        /> */}
+
+     
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -145,7 +172,7 @@ const styles = StyleSheet.create({
   header: {
     fontSize: 28,
     fontWeight: "bold",
-    marginBottom: 20,
+    
   },
 
   input: {
@@ -157,7 +184,7 @@ const styles = StyleSheet.create({
   },
 
   contentInput: {
-    height: 100,
+    height: '60%',
     textAlignVertical: "top",
   },
 
@@ -180,6 +207,11 @@ const styles = StyleSheet.create({
 
   listContent: {
     paddingBottom: 30,
+  },
+  emptyTextContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    marginVertical: 20,
   },
 
   noteCard: {

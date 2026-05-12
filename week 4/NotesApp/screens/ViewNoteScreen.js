@@ -1,43 +1,88 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   StyleSheet,
   Text,
   View,
   ScrollView,
   Pressable,
+  TextInput,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const ViewNoteScreen = ({ route, navigation }) => {
-  const { note } = route.params;
+  const { note, setNotes } = route.params;
+
+  const [isEditing, setIsEditing] = useState(false);
+  const [title, setTitle] = useState(note.title);
+  const [content, setContent] = useState(note.content);
+
+  const handleSave = () => {
+    
+    setNotes((prev) =>
+      prev.map((item) =>
+        item.id === note.id
+          ? {
+              ...item,
+              title: title.trim(),
+              content: content.trim(),
+            }
+          : item
+      )
+    );
+
+    setIsEditing(false);
+  };
+
+
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <Pressable onPress={() => navigation.goBack()}>
-          <Text style={styles.backButton}>← Back</Text>
+          <Text style={styles.backButton}>Back</Text>
         </Pressable>
 
-        <Text style={styles.screenTitle}>View Note</Text>
+        <Pressable onPress={isEditing ? handleSave : () => setIsEditing(true)}>
+          <Text style={styles.editButton}>
+            {isEditing ? "Save" : "Edit"}
+          </Text>
+        </Pressable>
       </View>
 
-      <View style={styles.wrapper}> 
+      <View style={styles.wrapper}>
         <View style={styles.card}>
-          <Text style={styles.title}>{note.title}</Text>
+          {isEditing ? (
+            <TextInput
+              value={title}
+              onChangeText={setTitle}
+              style={styles.titleInput}
+              placeholder="Title"
+            />
+          ) : (
+            <Text style={styles.title}>{title}</Text>
+          )}
 
-          <Text style={styles.date}>
-            Created • {new Date().toLocaleDateString()}
-          </Text>
-
-          <View style={styles.divider} />
+          
 
           <ScrollView
-           
+            showsVerticalScrollIndicator={false}
             contentContainerStyle={{ paddingBottom: 20 }}
           >
-            <Text style={styles.content}>{note.content}</Text>
+            {isEditing ? (
+              <TextInput
+                value={content}
+                onChangeText={setContent}
+                style={styles.contentInput}
+                placeholder="Content"
+                multiline
+                textAlignVertical="top"
+              />
+            ) : (
+              <Text style={styles.content}>{content}</Text>
+            )}
           </ScrollView>
 
+        
         </View>
       </View>
     </SafeAreaView>
@@ -55,17 +100,19 @@ const styles = StyleSheet.create({
   header: {
     paddingHorizontal: 20,
     paddingTop: 10,
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
 
   backButton: {
     fontSize: 16,
     fontWeight: "600",
-    marginBottom: 10,
   },
 
-  screenTitle: {
-    fontSize: 30,
-    fontWeight: "bold",
+  editButton: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#a68fdc",
   },
 
   wrapper: {
@@ -80,7 +127,6 @@ const styles = StyleSheet.create({
     padding: 22,
     borderWidth: 1,
     borderColor: "#e5e5e5",
-
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
@@ -98,11 +144,16 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
 
-  date: {
-    color: "#777",
-    fontSize: 14,
-    marginBottom: 18,
+  titleInput: {
+    fontSize: 30,
+    fontWeight: "bold",
+    color: "#111",
+    marginBottom: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: "#ccc",
+    paddingVertical: 4,
   },
+
 
   divider: {
     height: 1,
@@ -116,7 +167,24 @@ const styles = StyleSheet.create({
     color: "#333",
   },
 
+  contentInput: {
+    fontSize: 18,
+    lineHeight: 30,
+    color: "#333",
+    minHeight: 300,
+  },
 
+  deleteButton: {
+    backgroundColor: "#ef4444",
+    padding: 14,
+    borderRadius: 12,
+    alignItems: "center",
+    marginTop: 10,
+  },
 
-
+  deleteText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "700",
+  },
 });
