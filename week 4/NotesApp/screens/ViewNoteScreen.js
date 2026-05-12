@@ -11,14 +11,17 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 const ViewNoteScreen = ({ route, navigation }) => {
   // param from HomeScreen
-  const { note, setNotes } = route.params;//destructuring 
+   //contains the parameters passed when navigating via 
+  // navigation.push('ViewNote', { note: item, setNotes })
+  const { note, setNotes } = route.params;//destructuring
+ 
 
   const [isEditing, setIsEditing] = useState(false);
   const [title, setTitle] = useState(note.title); 
   const [content, setContent] = useState(note.content);
 
   const handleSave = () => {
-    // map through previous notes if id exist update value
+    // map through previous notes if id exist update value 
     setNotes((prev) =>
       prev.map((item) =>
         item.id === note.id
@@ -39,7 +42,7 @@ const ViewNoteScreen = ({ route, navigation }) => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        // navigate to previous page 
+        // navigate to previous screen 
         <Pressable onPress={() => navigation.goBack()}>
           <Text style={styles.backButton}>Back</Text>
         </Pressable>

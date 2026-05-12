@@ -13,42 +13,16 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function NotesScreen({ navigation, notes, setNotes }) {
-  const [refreshing, setRefreshing] = useState(false)
   
   const [isEditId, setIsEditId] = useState(null);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
 
- const onRefresh = useCallback(() => {
-  setRefreshing(true);
 
-
-  //fetchNotes()
-  setTimeout(() => {
-    setNotes((prev) =>
-      prev.map((note) => ({
-        ...note,
-        content: note.content + Math.floor(Math.random() * 10),// refresh simulator
-      }))
-    );
-
-    setRefreshing(false);
-  }, 1000);
-}, []);
-
+// create new note with id, title and content
   function addNote() {
     if (!title.trim() || !content.trim()) return;
-   // if id is provided edit existing note with given id 
-    if (isEditId) {
-      setNotes((prev) =>
-        prev.map((item) =>
-          item.id === isEditId
-            ? { ...item, title: title.trim(), content: content.trim() }
-            : item,
-        ),
-      );
-      setIsEditId(null);
-    } else {// if id is not given create new note with id , title, content
+   
       const newNote = {
         id: Date.now().toString(),
         title: title.trim(),
@@ -56,13 +30,11 @@ export default function NotesScreen({ navigation, notes, setNotes }) {
       };
 
       setNotes((prevNotes) => [newNote, ...prevNotes]);
-    }
-
     
-
     setTitle("");
     setContent("");
   }
+
 // set Id for isEditId from item with title and content
   const handleEdit = (item) => {
     setIsEditId(item.id);
@@ -116,41 +88,11 @@ export default function NotesScreen({ navigation, notes, setNotes }) {
 
         <TouchableOpacity style={styles.button} onPress={addNote}>
           <Text style={styles.buttonText}>
-            {isEditId ? "Update Note" : "Save Note"}
+           Save Note
           </Text>
         </TouchableOpacity>
 
-        {/* {notes.length === 0 && (
-          <View style={styles.emptyTextContainer}>
-            <Text>No notes yet!</Text>
-          </View>
-        )} */}
-
-        {/* <FlatList
-          style={styles.list}
-          contentContainerStyle={styles.listContent}
-          data={notes}
-          keyExtractor={(item) => item.id}
-          refreshing={refreshing}
-          onRefresh={onRefresh}
-          keyboardShouldPersistTaps="handled"
-          keyboardDismissMode="on-drag" //dismiss keyboard when scrolling
-          showsVerticalScrollIndicator={false}
-          renderItem={({ item }) => (
-            <View style={styles.noteCard}>
-              <Text style={styles.noteTitle}>{item.title}</Text>
-              <Text numberOfLines={2}>{item.content}</Text>
-
-              <View style={styles.actionContainer}>
-                <Pressable onPress={() => handleEdit(item)}>
-                  <Text style={styles.actionText}>Edit</Text>
-                </Pressable>
-
-              
-              </View>
-            </View>
-          )}
-        /> */}
+  
 
      
       </KeyboardAvoidingView>
