@@ -26,7 +26,6 @@ export default function HomeScreen({ navigation, notes, setNotes }) {
       {notes.length === 0 && (
         <View>
           <Text style={styles.header}>No notes yet!</Text>
-          <Text>Tap the button below to create your first note</Text>
         </View>
       )}
 
