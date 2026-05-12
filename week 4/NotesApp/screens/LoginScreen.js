@@ -7,6 +7,8 @@ import {
   StyleSheet,
   Pressable,
   View,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { loginValidation } from "../validations/loginValidation";
@@ -28,8 +30,12 @@ export default function App({ navigation }) {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.sigInText}>Sign In</Text>
-      <Text style={{color:'red'}}> Voice Note</Text>
+      <KeyboardAvoidingView
+  behavior={Platform.OS === "ios" ? "padding" : "height"}
+  style={styles.keyboardView}
+>
+          <Text style={styles.sigInText}>Sign In</Text>
+      
 
       <View style={styles.form}>
         <TextInput
@@ -66,10 +72,12 @@ export default function App({ navigation }) {
       <View style={styles.singUpContainer}>
         <Text style={styles.signUp}>Don't have an account?</Text>
 
-        <TouchableOpacity onPress={() => navigation.navigate("SignUp")}>
+        <TouchableOpacity onPress={() => navigation.push("SignUp")}>
           <Text style={[styles.singUpText, styles.signUp]}>Register Now!</Text>
         </TouchableOpacity>
       </View>
+      </KeyboardAvoidingView>
+    
     </SafeAreaView>
   );
 }
@@ -82,6 +90,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 20,
   },
+  keyboardView: {
+  flex: 1,
+  width: "100%",
+  justifyContent: "center",
+  alignItems: "center",
+},
 
   form: {
     width: "100%",

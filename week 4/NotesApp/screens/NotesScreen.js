@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-
 import {
   View,
   Text,
@@ -9,36 +8,66 @@ import {
   StyleSheet,
   KeyboardAvoidingView,
   Platform,
-  TouchableWithoutFeedback,
-  Keyboard,
+  Pressable,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-export default function NotesScreen() {
+export default function NotesScreen({ navigation }) {
   const [notes, setNotes] = useState([]);
-
+  const [isEditId, setIsEditId] = useState(null);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
 
-function addNote() {
-  if (!title.trim() || !content.trim()) {
-    return;
+  function addNote() {
+    if (!title.trim() || !content.trim()) return;
+
+    if (isEditId) {
+      setNotes((prev) =>
+        prev.map((item) =>
+          item.id === isEditId
+            ? { ...item, title: title.trim(), content: content.trim() }
+            : item
+        )
+      );
+      setIsEditId(null);
+    } else {
+      const newNote = {
+        id: Date.now().toString(),
+        title: title.trim(),
+        content: content.trim(),
+      };
+
+      setNotes((prevNotes) => [newNote, ...prevNotes]);
+    }
+
+    setTitle("");
+    setContent("");
   }
 
-  const newNote = {
-    id: Date.now().toString(),
-    title: title.trim(),
-    content: content.trim(),
+  const handleEdit = (item) => {
+    setIsEditId(item.id);
+    setTitle(item.title);
+    setContent(item.content);
   };
 
-  setNotes(prevNotes => [newNote, ...prevNotes]);
+  const handleView = (item) => {
+    navigation.push("ViewNote", {
+      note: item,
+    });
+  };
 
-  setTitle("");
-  setContent("");
-}
-return (
-  <SafeAreaView style={styles.container}>
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+  const handleDelete = (item) => {
+    setNotes((prev) => prev.filter((note) => note.id !== item.id));
+
+    if (isEditId === item.id) {
+      setIsEditId(null);
+      setTitle("");
+      setContent("");
+    }
+  };
+
+  return (
+    <SafeAreaView style={styles.safeArea}>
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={styles.container}
@@ -61,26 +90,53 @@ return (
         />
 
         <TouchableOpacity style={styles.button} onPress={addNote}>
-          <Text style={styles.buttonText}>Save Note</Text>
+          <Text style={styles.buttonText}>
+            {isEditId ? "Update Note" : "Save Note"}
+          </Text>
         </TouchableOpacity>
 
         <FlatList
+          style={styles.list}
+          contentContainerStyle={styles.listContent}
           data={notes}
           keyExtractor={(item) => item.id}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+          showsVerticalScrollIndicator={false}
           renderItem={({ item }) => (
             <View style={styles.noteCard}>
               <Text style={styles.noteTitle}>{item.title}</Text>
-              <Text>{item.content}</Text>
+              <Text numberOfLines={2}>{item.content}</Text>
+
+              <View style={styles.actionContainer}>
+                <Pressable onPress={() => handleEdit(item)}>
+                  <Text style={styles.actionText}>Edit</Text>
+                </Pressable>
+
+                <Pressable onPress={() => handleView(item)}>
+                  <Text style={styles.actionText}>View</Text>
+                </Pressable>
+
+                <Pressable onPress={() => handleDelete(item)}>
+                  <Text style={[styles.actionText, styles.deleteText]}>
+                    Delete
+                  </Text>
+                </Pressable>
+              </View>
             </View>
           )}
         />
       </KeyboardAvoidingView>
-    </TouchableWithoutFeedback>
-  </SafeAreaView>
-);
+    </SafeAreaView>
+  );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: "#ffffff",
+  },
+
   container: {
     flex: 1,
     padding: 20,
@@ -101,7 +157,7 @@ const styles = StyleSheet.create({
   },
 
   contentInput: {
-  height: "100",
+    height: 100,
     textAlignVertical: "top",
   },
 
@@ -118,13 +174,21 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
 
+  list: {
+    flex: 1,
+  },
+
+  listContent: {
+    paddingBottom: 30,
+  },
+
   noteCard: {
     backgroundColor: "#f4f4f4",
     padding: 15,
     borderRadius: 8,
     marginBottom: 10,
     borderWidth: 2,
-    borderColor: '#999'
+    borderColor: "#999",
   },
 
   noteTitle: {
@@ -132,6 +196,19 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginBottom: 5,
   },
+
+  actionContainer: {
+    flexDirection: "row",
+    gap: 10,
+    marginTop: 20,
+  },
+
+  actionText: {
+    fontWeight: "bold",
+    color: "#000",
+  },
+
+  deleteText: {
+    color: "red",
+  },
 });
-
-

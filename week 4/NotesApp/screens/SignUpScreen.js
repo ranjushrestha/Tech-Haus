@@ -58,7 +58,7 @@ const SignUpScreen = ({ navigation }) => {
         placeholder="Confirm password"
         value={formData.confirmPassword}
         onChangeText={(confirmPassword) =>
-          handleChange(confirmPassword, "confirmPassword")
+        handleChange(confirmPassword, "confirmPassword")
         }
         style={styles.input}
         secureTextEntry
@@ -81,7 +81,7 @@ const SignUpScreen = ({ navigation }) => {
         Already have an account?{" "}
         <Text
           style={styles.signInLink}
-          onPress={() => navigation.navigate("Login")}
+          onPress={() => navigation.push("Login")}
         >
           Sign In
         </Text>
