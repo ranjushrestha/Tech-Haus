@@ -8,20 +8,21 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-export default function HomeScreen({ navigation, notes, setNotes }) {
-  const handleView = (item) => {
+export default function HomeScreen({ navigation, notes, setNotes }) {//props from parent
+  const handleView = (item) => { // push to viewNoteScreen with note and setNotes as prop for dynamic routing
     navigation.push("ViewNote", {
       note: item,
       setNotes,
     });
   };
 
-  const handleDelete = (item) => {
+  const handleDelete = (item) => {// keep everything except the matching id
     setNotes((prev) => prev.filter((note) => note.id !== item.id));
   };
 
   return (
     <SafeAreaView style={styles.container}>
+      // If length is zero show text 
       {notes.length === 0 && (
         <View>
           <Text style={styles.header}>No notes yet!</Text>
@@ -42,12 +43,13 @@ export default function HomeScreen({ navigation, notes, setNotes }) {
         showsVerticalScrollIndicator={false}
         renderItem={({ item }) => (
           <View style={styles.noteWrapper}>
-            <Pressable
+            <Pressable 
               style={{ flex: 1 }}
               onPress={() => handleView(item)}
             >
               <View style={styles.noteCard}>
                 <Text style={styles.noteTitle}>
+                  // if title not given take first word from content as title 
                   {item.title?.trim()
                     ? item.title
                     : item.content?.trim().split(" ")[0] || "Untitled"}
@@ -64,7 +66,7 @@ export default function HomeScreen({ navigation, notes, setNotes }) {
           </View>
         )}
       />
-
+       //navigate to NotesScreen
       <TouchableOpacity
         style={styles.button}
         onPress={() => navigation.push("Notes")}

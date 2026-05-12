@@ -22,14 +22,19 @@ export default function App({ navigation }) {
     navigation.navigate("Home");
   };
 
+
+  // Custom hook 
   const { formData, errors, handleChange, handleSubmit } = useForm(
+    //initial value
     { email: "", password: "" },
+    //validation
     loginValidation,
     onPress,
   );
 
   return (
     <SafeAreaView style={styles.container}>
+      //if OS is ios gives bottom padding else shrinks height
       <KeyboardAvoidingView
   behavior={Platform.OS === "ios" ? "padding" : "height"}
   style={styles.keyboardView}
@@ -44,26 +49,28 @@ export default function App({ navigation }) {
           value={formData.email}
           onChangeText={(email) => handleChange(email, "email")}
         />
-
+  // if error is true shows Text
         {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
              <View style={styles.passwordContainer}>
 
           <TextInput
             placeholder="Enter password"
             value={formData.password}
-            onChangeText={(password) => handleChange(password, "password")}
+            onChangeText={(password) => handleChange(password, "password")}// value and fieldName for form submission and onChange
             style={styles.input}
             secureTextEntry={!showPassword}
           />
+          //toggles password
           <Pressable  style={styles.iconContainer} onPress={() => setShowPassword((prev) => !prev)}>
             <Ionicons name={showPassword ? "eye-off" : "eye"} size={18} color="gray"/>
           </Pressable>
         </View>
 
+          // if error is true show Text
         {errors.password && (
           <Text style={styles.errorText}>{errors.password}</Text>
         )}
-
+         // Submission Button
         <Pressable onPress={handleSubmit} style={styles.btnContainer}>
           <Text style={styles.buttonText}>Sign In</Text>
         </Pressable>
@@ -71,7 +78,7 @@ export default function App({ navigation }) {
 
       <View style={styles.singUpContainer}>
         <Text style={styles.signUp}>Don't have an account?</Text>
-
+              // Navigate to Sign Up page
         <TouchableOpacity onPress={() => navigation.push("SignUp")}>
           <Text style={[styles.singUpText, styles.signUp]}>Register Now!</Text>
         </TouchableOpacity>

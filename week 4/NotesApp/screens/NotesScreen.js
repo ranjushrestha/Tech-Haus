@@ -28,7 +28,7 @@ export default function NotesScreen({ navigation, notes, setNotes }) {
     setNotes((prev) =>
       prev.map((note) => ({
         ...note,
-        content: note.content + Math.floor(Math.random() * 10),
+        content: note.content + Math.floor(Math.random() * 10),// refresh simulator
       }))
     );
 
@@ -38,7 +38,7 @@ export default function NotesScreen({ navigation, notes, setNotes }) {
 
   function addNote() {
     if (!title.trim() || !content.trim()) return;
-
+   // if id is provided edit existing note with given id 
     if (isEditId) {
       setNotes((prev) =>
         prev.map((item) =>
@@ -48,7 +48,7 @@ export default function NotesScreen({ navigation, notes, setNotes }) {
         ),
       );
       setIsEditId(null);
-    } else {
+    } else {// if id is not given create new note with id , title, content
       const newNote = {
         id: Date.now().toString(),
         title: title.trim(),
@@ -63,7 +63,7 @@ export default function NotesScreen({ navigation, notes, setNotes }) {
     setTitle("");
     setContent("");
   }
-
+// set Id for isEditId from item with title and content
   const handleEdit = (item) => {
     setIsEditId(item.id);
     setTitle(item.title);
