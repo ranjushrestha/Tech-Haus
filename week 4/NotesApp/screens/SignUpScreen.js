@@ -16,15 +16,13 @@ const SignUpScreen = ({ navigation }) => {
     console.log("sign up form submitted", formData);
     return "";
   };
-// Custom hook
   const { formData, errors, handleChange, handleSubmit } = useForm(
-    //initial value
     {
       email: "",
       password: "",
       confirmPassword: "",
     },
-    //validation
+    
     signupValidation,
     onPress,
   );
@@ -65,7 +63,6 @@ const SignUpScreen = ({ navigation }) => {
         style={styles.input}
         secureTextEntry
       />
-           // if password and confirm password doesnt match show error from signupValidation 
       {errors.confirmPassword && (
         <Text style={styles.errorText}>
           {errors.confirmPassword}
@@ -79,7 +76,6 @@ const SignUpScreen = ({ navigation }) => {
         <Text style={styles.buttonText}>Sign Up</Text>
       </Pressable>
 
-     // navigate to Login page
       <Text style={styles.signUpText}>
         Already have an account?{" "}
         <Text

@@ -9,17 +9,19 @@ import {
   KeyboardAvoidingView,
   Platform,
   Pressable,
+  ToastAndroid
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Toast from "react-native-toast-message";
 
 export default function NotesScreen({ navigation, notes, setNotes }) {
   
   const [isEditId, setIsEditId] = useState(null);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  
 
 
-// create new note with id, title and content
   function addNote() {
     if (!title.trim() || !content.trim()) return;
    
@@ -30,17 +32,21 @@ export default function NotesScreen({ navigation, notes, setNotes }) {
       };
 
       setNotes((prevNotes) => [newNote, ...prevNotes]);
+
+     
+        Toast.show({
+          type:'success',
+          text1:'Note saved successfully',
+          position:'top',
+          visibilityTime:1500,
+        })
+      
     
     setTitle("");
     setContent("");
   }
 
-// set Id for isEditId from item with title and content
-  const handleEdit = (item) => {
-    setIsEditId(item.id);
-    setTitle(item.title);
-    setContent(item.content);
-  };
+
 
 
 

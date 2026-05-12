@@ -10,10 +10,9 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const ViewNoteScreen = ({ route, navigation }) => {
-  // param from HomeScreen
-   //contains the parameters passed when navigating via 
-  // navigation.push('ViewNote', { note: item, setNotes })
-  const { note, setNotes } = route.params;//destructuring
+ 
+ 
+  const { note, setNotes } = route.params;
  
 
   const [isEditing, setIsEditing] = useState(false);
@@ -21,7 +20,6 @@ const ViewNoteScreen = ({ route, navigation }) => {
   const [content, setContent] = useState(note.content);
 
   const handleSave = () => {
-    // map through previous notes if id exist update value 
     setNotes((prev) =>
       prev.map((item) =>
         item.id === note.id
@@ -42,13 +40,11 @@ const ViewNoteScreen = ({ route, navigation }) => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        // navigate to previous screen 
         <Pressable onPress={() => navigation.goBack()}>
           <Text style={styles.backButton}>Back</Text>
         </Pressable>
-    // if editing change pressable funtion to handleSave ; else set isEditing true
         <Pressable onPress={isEditing ? handleSave : () => setIsEditing(true)}>
-          // conditionally render text 
+          
           <Text style={styles.editButton}>
             {isEditing ? "Save" : "Edit"}
           </Text>
@@ -57,7 +53,7 @@ const ViewNoteScreen = ({ route, navigation }) => {
 
       <View style={styles.wrapper}>
         <View style={styles.card}>
-          // if editing then change to writable TextInput feild else show title as read only
+          
           {isEditing ? (
             <TextInput
               value={title}
@@ -75,7 +71,6 @@ const ViewNoteScreen = ({ route, navigation }) => {
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{ paddingBottom: 20 }}
           >
-          / if editing then change to writable TextInput feild else show content as read only
             {isEditing ? (
               <TextInput
                 value={content}
