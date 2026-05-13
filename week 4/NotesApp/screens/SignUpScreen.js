@@ -77,7 +77,7 @@ const SignUpScreen = ({ navigation }) => {
       </Pressable>
 
       <Text style={styles.signUpText}>
-        Already have an account?{" "}
+        Already have an account?
         <Text
           style={styles.signInLink}
           onPress={() => navigation.push("Login")}

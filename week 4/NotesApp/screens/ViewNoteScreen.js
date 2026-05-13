@@ -10,32 +10,22 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const ViewNoteScreen = ({ route, navigation }) => {
- 
- 
   const { note, setNotes } = route.params;
- 
 
   const [isEditing, setIsEditing] = useState(false);
-  const [title, setTitle] = useState(note.title); 
+  const [title, setTitle] = useState(note.title);
   const [content, setContent] = useState(note.content);
 
   const handleSave = () => {
     setNotes((prev) =>
       prev.map((item) =>
         item.id === note.id
-          ? {
-              ...item,
-              title: title.trim(),
-              content: content.trim(),
-            }
-          : item
-      )
+          ? { ...item, title: title.trim(), content: content.trim() }
+          : item,
+      ),
     );
-
     setIsEditing(false);
   };
-
-
 
   return (
     <SafeAreaView style={styles.container}>
@@ -44,16 +34,12 @@ const ViewNoteScreen = ({ route, navigation }) => {
           <Text style={styles.backButton}>Back</Text>
         </Pressable>
         <Pressable onPress={isEditing ? handleSave : () => setIsEditing(true)}>
-          
-          <Text style={styles.editButton}>
-            {isEditing ? "Save" : "Edit"}
-          </Text>
+          <Text style={styles.editButton}>{isEditing ? "Save" : "Edit"}</Text>
         </Pressable>
       </View>
 
       <View style={styles.wrapper}>
         <View style={styles.card}>
-          
           {isEditing ? (
             <TextInput
               value={title}
@@ -64,8 +50,6 @@ const ViewNoteScreen = ({ route, navigation }) => {
           ) : (
             <Text style={styles.title}>{title}</Text>
           )}
-
-          
 
           <ScrollView
             showsVerticalScrollIndicator={false}
@@ -84,8 +68,6 @@ const ViewNoteScreen = ({ route, navigation }) => {
               <Text style={styles.content}>{content}</Text>
             )}
           </ScrollView>
-
-        
         </View>
       </View>
     </SafeAreaView>
@@ -156,7 +138,6 @@ const styles = StyleSheet.create({
     borderBottomColor: "#ccc",
     paddingVertical: 4,
   },
-
 
   divider: {
     height: 1,

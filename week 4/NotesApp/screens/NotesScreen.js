@@ -9,73 +9,72 @@ import {
   KeyboardAvoidingView,
   Platform,
   Pressable,
-  ToastAndroid
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 
 export default function NotesScreen({ navigation, notes, setNotes }) {
-  
   const [isEditId, setIsEditId] = useState(null);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  
-
 
   function addNote() {
     if (!title.trim() || !content.trim()) return;
-   
-      const newNote = {
-        id: Date.now().toString(),
-        title: title.trim(),
-        content: content.trim(),
-      };
 
-      setNotes((prevNotes) => [newNote, ...prevNotes]);
+    const newNote = {
+      id: Date.now().toString(),
+      title: title.trim(),
+      content: content.trim(),
+    };
 
-     
-        Toast.show({
-          type:'success',
-          text1:'Note saved successfully',
-          position:'top',
-          visibilityTime:1500,
-        })
-      
-    
+    setNotes((prevNotes) => [newNote, ...prevNotes]);
+
+    Toast.show({
+      type: "success",
+      text1: "Note saved successfully",
+      position: "top",
+      visibilityTime: 1500,
+    });
+
     setTitle("");
     setContent("");
   }
 
-
-
-
-
- 
   return (
     <SafeAreaView style={styles.safeArea}>
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={styles.container}
       >
-        <View style={{flexDirection:'row', alignItems:'center', justifyContent:'space-between',marginBottom: 20,}}>
-           <Text style={styles.header}> Notes</Text>
-           <Pressable
+        <View
           style={{
-            backgroundColor: "blue",
-            padding: 8,
-            width: "80",
-            borderRadius: 20,
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginBottom: 20,
           }}
-          onPress={() => navigation.push("Login")}
         >
-          <Text
-            style={{ color: "white", fontWeight: "bold", textAlign: "center" }}
+          <Text style={styles.header}> Notes</Text>
+          <Pressable
+            style={{
+              backgroundColor: "blue",
+              padding: 8,
+              width: "80",
+              borderRadius: 20,
+            }}
+            onPress={() => navigation.push("Login")}
           >
-            Sign out
-          </Text>
-        </Pressable>
+            <Text
+              style={{
+                color: "white",
+                fontWeight: "bold",
+                textAlign: "center",
+              }}
+            >
+              Sign out
+            </Text>
+          </Pressable>
         </View>
-       
 
         <TextInput
           style={styles.input}
@@ -93,14 +92,8 @@ export default function NotesScreen({ navigation, notes, setNotes }) {
         />
 
         <TouchableOpacity style={styles.button} onPress={addNote}>
-          <Text style={styles.buttonText}>
-           Save Note
-          </Text>
+          <Text style={styles.buttonText}>Save Note</Text>
         </TouchableOpacity>
-
-  
-
-     
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -120,7 +113,6 @@ const styles = StyleSheet.create({
   header: {
     fontSize: 28,
     fontWeight: "bold",
-    
   },
 
   input: {
@@ -132,7 +124,7 @@ const styles = StyleSheet.create({
   },
 
   contentInput: {
-    height: '60%',
+    height: "60%",
     textAlignVertical: "top",
   },
 
