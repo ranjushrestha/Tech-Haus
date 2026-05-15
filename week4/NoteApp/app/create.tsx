@@ -1,6 +1,5 @@
 import { supabase } from "@/lib/supabase";
-import { useNoteStore } from "@/store/useNoteStore";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import React, { useState } from "react";
 import {
   KeyboardAvoidingView,
@@ -14,14 +13,12 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from 'react-native-toast-message' 
 
-type Note = {
-  id: string;
-  title: string;
-  content: string;
-};
+
 
 const Notes = () => {
-const { addNote} = useNoteStore()
+
+  const {id} = useLocalSearchParams()
+
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
 
@@ -56,12 +53,6 @@ const handleAdd = async () => {
 
   console.log("Inserted note:", data);
 
-  addNote({
-    id: data.id,
-    title: data.title,
-    content: data.content,
-  });
-
   setTitle("");
   setContent("");
 
@@ -72,9 +63,8 @@ const handleAdd = async () => {
     visibilityTime: 1500,
   });
 
-  router.push("/");
+  router.replace("/");
 };
-
 
   return (
     <SafeAreaView style={styles.container} edges={["bottom"]}>
