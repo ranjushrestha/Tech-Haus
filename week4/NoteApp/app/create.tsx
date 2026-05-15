@@ -1,16 +1,18 @@
+import { supabase } from "@/lib/supabase";
+import { useNoteStore } from "@/store/useNoteStore";
 import { router } from "expo-router";
 import React, { useState } from "react";
 import {
-    FlatList,
-    KeyboardAvoidingView,
-    Platform,
-    Pressable,
-    StyleSheet,
-    Text,
-    TextInput,
-    View,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Toast from 'react-native-toast-message' 
 
 type Note = {
   id: string;
@@ -19,73 +21,60 @@ type Note = {
 };
 
 const Notes = () => {
-  const [notes, setNotes] = useState<Note[]>([]);
-
+const { addNote} = useNoteStore()
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
 
-  const [isEditId, setIsEditId] = useState<string | null>(null);
 
-  const handleAdd = () => {
-    if (!title.trim() || !content.trim()) return;
+const handleAdd = async () => {
+  if (!title.trim() || !content.trim()) return;
 
-    if (isEditId) {
-      setNotes((prev) =>
-        prev.map((item) =>
-          item.id === isEditId
-            ? {
-                ...item,
-                title: title.trim(),
-                content: content.trim(),
-              }
-            : item,
-        ),
-      );
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
 
-      setIsEditId(null);
-      setTitle("");
-      setContent("");
-      return;
-    }
+  if (userError || !user) {
+    console.log("User not logged in");
+    return;
+  }
 
-    const newItem = {
-      id: Date.now().toString(),
+  const { data, error } = await supabase
+    .from("notes")
+    .insert({
       title: title.trim(),
       content: content.trim(),
-    };
+      user_id: user.id,
+    })
+    .select()
+    .single();
 
-    setNotes((prevNotes) => [newItem, ...prevNotes]);
+  if (error) {
+    console.log("Insert error:", error.message);
+    return;
+  }
 
-    setTitle("");
-    setContent("");
-  };
+  console.log("Inserted note:", data);
 
-  const handleEdit = (item: Note) => {
-    setIsEditId(item.id);
-    setTitle(item.title);
-    setContent(item.content);
-  };
+  addNote({
+    id: data.id,
+    title: data.title,
+    content: data.content,
+  });
 
-  const handleDelete = (item: Note) => {
-    setNotes((prev) => prev.filter((note) => note.id !== item.id));
+  setTitle("");
+  setContent("");
 
-    if (isEditId === item.id) {
-      setIsEditId(null);
-      setTitle("");
-      setContent("");
-    }
-  };
+  Toast.show({
+    type: "success",
+    text1: "Note saved successfully",
+    position: "top",
+    visibilityTime: 1500,
+  });
 
-  const handleView = (item: Note) => {
-    router.push({
-      pathname: "/notes/[note]",
-      params: {
-        id: item.id,
-        title: item.title,
-        content: item.content,
-      },
-    });
-  };
+  router.push("/");
+};
+
 
   return (
     <SafeAreaView style={styles.container} edges={["bottom"]}>
@@ -113,37 +102,11 @@ const Notes = () => {
 
           <Pressable style={styles.button} onPress={handleAdd}>
             <Text style={styles.buttonText}>
-              {isEditId ? "UPDATE NOTE" : "ADD NOTE"}
+            ADD NOTE
             </Text>
           </Pressable>
 
-          <FlatList
-            data={notes}
-            keyExtractor={(item) => item.id}
-            showsVerticalScrollIndicator={false}
-            renderItem={({ item }) => (
-              <View style={styles.noteCard}>
-                <View>
-                  <Text style={styles.noteTitle}>{item.title}</Text>
-                  <Text style={styles.noteContent}>{item.content}</Text>
-                </View>
-
-                <View style={styles.actionButton}>
-                  <Pressable onPress={() => handleEdit(item)}>
-                    <Text>Edit</Text>
-                  </Pressable>
-
-                  <Pressable onPress={() => handleView(item)}>
-                    <Text>View</Text>
-                  </Pressable>
-
-                  <Pressable onPress={() => handleDelete(item)}>
-                    <Text style={{ color: "red" }}>Delete</Text>
-                  </Pressable>
-                </View>
-              </View>
-            )}
-          />
+        
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
