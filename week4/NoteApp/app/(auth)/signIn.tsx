@@ -25,18 +25,29 @@ const SignIn = () => {
     setFormData({ ...formData, [fieldName]: value });
   };
 
-  const handleSubmit = async() => {
-    const { data, error } = await supabase.auth.signInWithPassword({
-  email: formData.email,
-  password: formData.password,
-})
+const handleSubmit = async () => {
+  if (!formData.email.trim() || !formData.password.trim()) {
+    console.log("Email and password required");
+    return;
+  }
 
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email: formData.email.trim(),
+    password: formData.password,
+  });
 
-    console.log("data", data);
-    console.log("data", error);
-     router.replace("/");
+  if (error) {
+    console.log("Login error:", error.message);
+    return;
+  }
+
+  if (data.user) {
     setFormData(initialState);
-  };
+    router.replace("/");
+  
+  }
+  console.log("login success")
+};
 
   return (
     <SafeAreaView style={styles.container}>
