@@ -109,11 +109,13 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#ddaac6",
     
+    
   },
 
   keyboardView: {
     flex: 1,
     marginHorizontal: 12,
+    justifyContent:'center'
    
   },
 

@@ -1,5 +1,6 @@
 import { supabase } from "@/lib/supabase";
 import { router } from "expo-router";
+import { goBack } from "expo-router/build/global-state/routing";
 import React, { useState } from "react";
 import {
   KeyboardAvoidingView,
@@ -12,6 +13,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
+import { Ionicons } from "@expo/vector-icons";
 
 const Notes = () => {
   const [title, setTitle] = useState("");
@@ -57,17 +59,27 @@ const Notes = () => {
       visibilityTime: 1500,
     });
 
-    router.replace("/");
+    router.push('/')
   };
 
   return (
     <SafeAreaView style={styles.container}>
+                <Pressable style={{ marginLeft: 2}} onPress={() => goBack()}>
+                  <Ionicons name="arrow-back" size={22}/>
+                  </Pressable>
+
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={styles.keyboardContainer}
       >
         <View style={styles.card}>
-          <Text style={styles.heading}>Create Note</Text>
+          <View style={styles.header}>
+             <Text style={styles.heading}>Create Note</Text>
+          <Pressable style={styles.checkButton} onPress={handleAdd}>
+            <Ionicons name="checkmark" size={28} color="#9b4d75"/>
+          </Pressable>
+          </View>
+         
 
           <TextInput
             placeholder="Title"
@@ -85,9 +97,7 @@ const Notes = () => {
             style={styles.contentInput}
           />
 
-          <Pressable style={styles.button} onPress={handleAdd}>
-            <Text style={styles.buttonText}>ADD NOTE</Text>
-          </Pressable>
+          
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -116,11 +126,20 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
 
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+
   heading: {
-    fontSize: 24,
-    fontWeight: "700",
-    color: "#9b4d75",
-    marginBottom: 20,
+    fontSize: 26,
+  fontWeight:'bold',
+    color: "#9b4d75"
+  },
+
+  checkButton: {
+    padding: 8,
   },
 
   titleInput: {
@@ -151,4 +170,7 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     fontSize: 16,
   },
+  
+ 
+
 });

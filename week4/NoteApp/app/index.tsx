@@ -4,6 +4,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { router, useFocusEffect } from "expo-router";
 import { supabase } from "@/lib/supabase";
 import { Ionicons } from "@expo/vector-icons";
+import EmptyState from "../components/EmptyState ";
+import { User } from "@supabase/supabase-js";
 
 type Note = {
   id: string;
@@ -17,6 +19,7 @@ const Index = () => {
   const [notes, setNotes] = useState<Note[]>([]);
   const [loading, setLoading] = useState(true);
 
+const [user, setUser] = useState<User | null>(null);
   const fetchNotes = useCallback(async () => {
     if (notes.length === 0) {
       setLoading(true);
@@ -27,10 +30,14 @@ const Index = () => {
       error: userError,
     } = await supabase.auth.getUser();
 
+    setUser(user)
+
     if (userError || !user) {
       setLoading(false);
       return;
     }
+
+
 
     const { data, error } = await supabase
       .from("notes")
@@ -51,14 +58,11 @@ const Index = () => {
   useFocusEffect(
     useCallback(() => {
       fetchNotes();
-    }, [])
+    }, [fetchNotes]),
   );
 
   const handleDelete = async (item: Note) => {
-    const { error } = await supabase
-      .from("notes")
-      .delete()
-      .eq("id", item.id);
+    const { error } = await supabase.from("notes").delete().eq("id", item.id);
 
     if (error) {
       console.log("Delete error:", error.message);
@@ -77,6 +81,17 @@ const Index = () => {
     });
   };
 
+  const handleSignOut = async () => {
+    const { error } = await supabase.auth.signOut();
+
+    if (error) {
+      console.log("Sign out error:", error.message);
+      return;
+    }
+
+    router.replace("/signIn");
+  };
+
   if (loading) {
     return (
       <SafeAreaView style={styles.center}>
@@ -85,17 +100,59 @@ const Index = () => {
     );
   }
 
-  return (
-    <SafeAreaView style={styles.container}>
-   <View style={styles.header}>
-  <Text style={styles.heading}>My Notes</Text>
+  const renderItem = ({ item }: { item: Note }) => {
+    return (
+      <Pressable
+        onPress={() => handleView(item)}
+        style={({ pressed }) => [styles.card, pressed && { opacity: 0.75 }]}
+      >
+        <View style={styles.cardContent}>
+          <View style={styles.textBox}>
+            <Text numberOfLines={1} style={styles.title}>
+              {item.title?.trim()
+                ? item.title
+                : item.content?.trim().split(" ")[0] || "Untitled"}
+            </Text>
 
-  {notes.length > 0 && (
-    <Text style={styles.subHeading}>
-      {notes.length} {notes.length === 1 ? "note" : "notes"}
-    </Text>
-  )}
-</View>
+            <Text numberOfLines={2} style={styles.content}>
+              {item.content || "No content"}
+            </Text>
+          </View>
+
+          <Pressable
+            onPress={(e) => {
+              e.stopPropagation();
+              handleDelete(item);
+            }}
+            style={styles.deleteButton}
+          >
+            <Ionicons name="trash-outline" size={22} color="red" />
+          </Pressable>
+        </View>
+      </Pressable>
+    );
+  };
+
+  return (
+    <SafeAreaView style={styles.container} edges={["top", "bottom"]}>
+      <View style={styles.header}>
+        <Text style={styles.heading}>My Notes</Text>
+         {user ?   
+         <Pressable style={styles.signOutButton} onPress={handleSignOut}>
+          <Text style={styles.signOutText}>Sign Out</Text>
+        </Pressable>
+        :
+        <Pressable style={styles.signOutButton} onPress={() => router.push("/signIn")}>
+          <Text style={styles.signOutText}>Sign In</Text>
+          </Pressable>}
+      
+      </View>
+
+      {notes.length > 0 && (
+        <Text style={styles.subHeading}>
+          {notes.length} {notes.length === 1 ? "note" : "notes"}
+        </Text>
+      )}
 
       <FlatList
         data={notes}
@@ -105,45 +162,8 @@ const Index = () => {
           styles.listContent,
           notes.length === 0 && styles.emptyListContent,
         ]}
-        ListEmptyComponent={
-          <View style={styles.emptyBox}>
-            <Text style={styles.emptyTitle}>No notes yet!</Text>
-            <Text style={styles.emptyText}>Create your first note.</Text>
-          </View>
-        }
-        renderItem={({ item }) => (
-          <Pressable
-            onPress={() => handleView(item)}
-            style={({ pressed }) => [
-              styles.card,
-              pressed && { opacity: 0.75 },
-            ]}
-          >
-            <View style={styles.cardContent}>
-              <View style={styles.textBox}>
-                <Text numberOfLines={1} style={styles.title}>
-                  {item.title?.trim()
-                    ? item.title
-                    : item.content?.trim().split(" ")[0] || "Untitled"}
-                </Text>
-
-                <Text numberOfLines={2} style={styles.content}>
-                  {item.content || "No content"}
-                </Text>
-              </View>
-
-              <Pressable
-                onPress={(e) => {
-                  e.stopPropagation();
-                  handleDelete(item);
-                }}
-                style={styles.deleteButton}
-              >
-                <Ionicons name="trash-outline" size={22} color="red" />
-              </Pressable>
-            </View>
-          </Pressable>
-        )}
+        ListEmptyComponent={<EmptyState />}
+        renderItem={renderItem}
       />
 
       <Pressable
@@ -180,6 +200,9 @@ const styles = StyleSheet.create({
 
   header: {
     marginBottom: 16,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
 
   heading: {
@@ -189,7 +212,7 @@ const styles = StyleSheet.create({
   },
 
   subHeading: {
-    marginTop: 4,
+    marginBottom: 4,
     fontSize: 14,
     color: "#843d54",
   },
@@ -201,25 +224,6 @@ const styles = StyleSheet.create({
   emptyListContent: {
     flexGrow: 1,
     justifyContent: "center",
-  },
-
-  emptyBox: {
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: 24,
-  },
-
-  emptyTitle: {
-    marginTop: 14,
-    fontSize: 24,
-    fontWeight: "700",
-    color: "#9b4d75",
-  },
-
-  emptyText: {
-    marginTop: 6,
-    fontSize: 15,
-    color: "#777",
   },
 
   card: {
@@ -281,5 +285,18 @@ const styles = StyleSheet.create({
     color: "white",
     fontWeight: "700",
     fontSize: 15,
+  },
+  signOutButton: {
+    marginTop: 12,
+    alignSelf: "flex-start",
+    backgroundColor: "#9b4d75",
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 10,
+  },
+
+  signOutText: {
+    color: "white",
+    fontWeight: "600",
   },
 });

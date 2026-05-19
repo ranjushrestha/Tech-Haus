@@ -31,11 +31,16 @@ const signUp = () => {
   email: formData.email,
   password: formData.password,
 })
-// console.log("data:",data)
-// console.log("error:",error)
 
-    // console.log("signed up", formData)
-    setFormData(initialState)
+    if(error) {
+      console.log("error signing up:", error.message)
+    }
+
+    if(data) {
+      router.push('/signIn')
+      setFormData(initialState)
+    }
+    
   }
 
   return (
@@ -128,6 +133,7 @@ const styles = StyleSheet.create({
   keyboardView: {
     flex: 1,
     paddingHorizontal: 12,
+    justifyContent:'center'
     
   },
 

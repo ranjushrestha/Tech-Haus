@@ -1,9 +1,14 @@
 import { supabase } from "@/lib/supabase";
-import { useLocalSearchParams } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
+import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
   Pressable,
   ScrollView,
+  StyleSheet,
   Text,
   TextInput,
   View,
@@ -12,7 +17,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function NoteDetail() {
   const { note } = useLocalSearchParams();
-
   const id = Array.isArray(note) ? note[0] : note;
 
   const [title, setTitle] = useState("");
@@ -25,14 +29,10 @@ export default function NoteDetail() {
   const [saving, setSaving] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
 
-
-  //fetch data on id change
   useEffect(() => {
     fetchSingleNote();
   }, [id]);
 
-
-  // get single note from db
   const fetchSingleNote = async () => {
     if (!id) return;
 
@@ -52,180 +52,205 @@ export default function NoteDetail() {
 
     setTitle(data.title);
     setContent(data.content);
-
     setEditTitle(data.title);
     setEditContent(data.content);
 
     setLoading(false);
   };
 
-
-  
   const handleEdit = () => {
     setEditTitle(title);
     setEditContent(content);
     setIsEditing(true);
   };
 
-  const handleCancel = () => {
-    setEditTitle(title);
-    setEditContent(content);
-    setIsEditing(false);
-  };
-
-
-  //update note
   const handleUpdate = async () => {
-      if (!id) return;
+    if (!id) return;
 
-      setSaving(true);
+    setSaving(true);
 
-      const { error } = await supabase
-        .from("notes")
-        .update({
-          title: editTitle.trim(),
-          content: editContent.trim(),
-        })
-        .eq("id", id);
+    const { error } = await supabase
+      .from("notes")
+      .update({
+        title: editTitle.trim(),
+        content: editContent.trim(),
+      })
+      .eq("id", id);
 
-      if (error) {    
-        console.log("Update error:", error.message);
-        setSaving(false);
-        return;
-      }
-
-      setTitle(editTitle.trim());
-      setContent(editContent.trim());
-
-      setIsEditing(false);
+    if (error) {
+      console.log("Update error:", error.message);
       setSaving(false);
-    };
+      return;
+    }
+
+    setTitle(editTitle.trim());
+    setContent(editContent.trim());
+
+    setIsEditing(false);
+    setSaving(false);
+  };
 
   if (loading) {
     return (
-      <SafeAreaView
-        style={{
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
-        <Text style={{ color: "#9b4d75", fontSize: 22 }}>Loading...</Text>
+      <SafeAreaView style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#9b4d75" />
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, padding: "8%" }}>
-      <View
-        style={{
-          flex: 1,
-          borderWidth: 2,
-          borderRadius: 20,
-          borderColor: "#9b4d75",
-          padding: 20,
-          marginTop: 12,
-        }}
+    <SafeAreaView style={styles.container} edges={["top", "bottom"]}>
+      <KeyboardAvoidingView
+        style={styles.keyboardContainer}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
-        {isEditing ? (
-          <TextInput
-            value={editTitle}
-            onChangeText={setEditTitle}
-            placeholder="Title"
-            style={{
-              borderBottomWidth: 2,
-              borderColor: "#9b4d75",
-              marginBottom: 10,
-              paddingBottom: 4,
-              fontSize: 20,
-              fontWeight: "600",
-            }}
-          />
-        ) : (
-          <Text
-            style={{
-              borderBottomWidth: 2,
-              borderColor: "#9b4d75",
-              marginBottom: 10,
-              paddingBottom: 4,
-              fontSize: 20,
-              fontWeight: "600",
-            }}
-          >
-            {title}
-          </Text>
-        )}
+        <View style={styles.header}>
+          <Pressable style={styles.iconButton} onPress={() => router.back()}>
+            <Ionicons name="arrow-back" size={24} color="#333" />
+          </Pressable>
 
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingTop: 12 }}
-        >
+          {isEditing ? (
+            <Pressable
+              style={styles.iconButton}
+              onPress={handleUpdate}
+              disabled={saving}
+            >
+              {saving ? (
+                <ActivityIndicator size="small" color="#9b4d75" />
+              ) : (
+                <Ionicons name="checkmark-outline" size={24} color="#9b4d75" />
+              )}
+            </Pressable>
+          ) : (
+            <Pressable style={styles.iconButton} onPress={handleEdit}>
+              <Ionicons name="create-outline" size={24} color="#9b4d75" />
+            </Pressable>
+          )}
+        </View>
+
+        <View style={styles.card}>
           {isEditing ? (
             <TextInput
-              value={editContent}
-              onChangeText={setEditContent}
-              placeholder="Content"
-              multiline
-              textAlignVertical="top"
-              style={{
-                minHeight: 300,
-                fontSize: 16,
-              }}
+              value={editTitle}
+              onChangeText={setEditTitle}
+              placeholder="Title"
+              style={styles.titleInput}
             />
           ) : (
-            <Text style={{ fontSize: 16 }}>{content}</Text>
+            <Text style={styles.title}>{title}</Text>
           )}
-        </ScrollView>
 
-        {isEditing ? (
-          <View style={{ flexDirection: "row", gap: 10, marginTop: 20 }}>
-            <Pressable
-              onPress={handleUpdate}
-              style={{
-                flex: 1,
-                backgroundColor: "#9b4d75",
-                padding: 12,
-                borderRadius: 12,
-              }}
-            >
-              <Text style={{ color: "white", textAlign: "center" }}>
-                {saving ? "Saving..." : "Save"}
-              </Text>
-            </Pressable>
-
-            <Pressable
-              onPress={handleCancel}
-              style={{
-                flex: 1,
-                borderWidth: 1,
-                borderColor: "#9b4d75",
-                padding: 12,
-                borderRadius: 12,
-              }}
-            >
-              <Text style={{ color: "#9b4d75", textAlign: "center" }}>
-                Cancel
-              </Text>
-            </Pressable>
-          </View>
-        ) : (
-          <Pressable
-            onPress={handleEdit}
-            style={{
-              marginTop: 20,
-              backgroundColor: "#9b4d75",
-              padding: 12,
-              borderRadius: 12,
-            }}
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.scrollContent}
           >
-            <Text style={{ color: "white", textAlign: "center" }}>
-              Edit
-            </Text>
-          </Pressable>
-        )}
-      </View>
+            {isEditing ? (
+              <TextInput
+                value={editContent}
+                onChangeText={setEditContent}
+                placeholder="Content"
+                multiline
+                textAlignVertical="top"
+                style={styles.contentInput}
+              />
+            ) : (
+              <Text style={styles.content}>{content}</Text>
+            )}
+          </ScrollView>
+        </View>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
 
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
 
+    paddingHorizontal: 20,
+  },
+  keyboardContainer: {
+    flex: 1,
+  },
+
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  loadingText: {
+    marginTop: 12,
+    color: "#9b4d75",
+    fontSize: 18,
+    fontWeight: "600",
+  },
+
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 8,
+  },
+
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#333",
+  },
+
+  iconButton: {
+    width: 42,
+    height: 42,
+
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  card: {
+    flex: 1,
+    borderWidth: 2,
+    borderRadius: 20,
+    borderColor: "#9b4d75",
+    padding: 20,
+    marginTop: 12,
+  },
+
+  title: {
+    fontSize: 24,
+    fontWeight: "700",
+    color: "#2f2f2f",
+    borderBottomWidth: 1,
+    borderBottomColor: "#9b4d75",
+    paddingBottom: 12,
+    marginBottom: 12,
+  },
+
+  titleInput: {
+    fontSize: 24,
+    fontWeight: "700",
+    color: "#2f2f2f",
+    borderBottomWidth: 1,
+    borderBottomColor: "#9b4d75",
+    paddingBottom: 12,
+    marginBottom: 12,
+  },
+
+  scrollContent: {
+    paddingTop: 10,
+    paddingBottom: 30,
+  },
+
+  content: {
+    fontSize: 16,
+    lineHeight: 24,
+    color: "#444",
+  },
+
+  contentInput: {
+    minHeight: 350,
+    fontSize: 16,
+    lineHeight: 24,
+    color: "#444",
+  },
+});
