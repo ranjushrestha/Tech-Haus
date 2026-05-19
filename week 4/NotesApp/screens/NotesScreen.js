@@ -1,5 +1,4 @@
-import React, { useState } from "react";
-
+import React, { useCallback, useState } from "react";
 import {
   View,
   Text,
@@ -9,41 +8,73 @@ import {
   StyleSheet,
   KeyboardAvoidingView,
   Platform,
-  TouchableWithoutFeedback,
-  Keyboard,
+  Pressable,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Toast from "react-native-toast-message";
 
-export default function NotesScreen() {
-  const [notes, setNotes] = useState([]);
-
+export default function NotesScreen({ navigation, notes, setNotes }) {
+  const [isEditId, setIsEditId] = useState(null);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
 
-function addNote() {
-  if (!title.trim() || !content.trim()) {
-    return;
+  function addNote() {
+    if (!title.trim() || !content.trim()) return;
+
+    const newNote = {
+      id: Date.now().toString(),
+      title: title.trim(),
+      content: content.trim(),
+    };
+
+    setNotes((prevNotes) => [newNote, ...prevNotes]);
+
+    Toast.show({
+      type: "success",
+      text1: "Note saved successfully",
+      position: "top",
+      visibilityTime: 1500,
+    });
+
+    setTitle("");
+    setContent("");
   }
 
-  const newNote = {
-    id: Date.now().toString(),
-    title: title.trim(),
-    content: content.trim(),
-  };
-
-  setNotes(prevNotes => [newNote, ...prevNotes]);
-
-  setTitle("");
-  setContent("");
-}
-return (
-  <SafeAreaView style={styles.container}>
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+  return (
+    <SafeAreaView style={styles.safeArea}>
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={styles.container}
       >
-        <Text style={styles.header}>My Notes</Text>
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginBottom: 20,
+          }}
+        >
+          <Text style={styles.header}> Notes</Text>
+          <Pressable
+            style={{
+              backgroundColor: "blue",
+              padding: 8,
+              width: "80",
+              borderRadius: 20,
+            }}
+            onPress={() => navigation.push("Login")}
+          >
+            <Text
+              style={{
+                color: "white",
+                fontWeight: "bold",
+                textAlign: "center",
+              }}
+            >
+              Sign out
+            </Text>
+          </Pressable>
+        </View>
 
         <TextInput
           style={styles.input}
@@ -63,24 +94,17 @@ return (
         <TouchableOpacity style={styles.button} onPress={addNote}>
           <Text style={styles.buttonText}>Save Note</Text>
         </TouchableOpacity>
-
-        <FlatList
-          data={notes}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <View style={styles.noteCard}>
-              <Text style={styles.noteTitle}>{item.title}</Text>
-              <Text>{item.content}</Text>
-            </View>
-          )}
-        />
       </KeyboardAvoidingView>
-    </TouchableWithoutFeedback>
-  </SafeAreaView>
-);
+    </SafeAreaView>
+  );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: "#ffffff",
+  },
+
   container: {
     flex: 1,
     padding: 20,
@@ -89,7 +113,6 @@ const styles = StyleSheet.create({
   header: {
     fontSize: 28,
     fontWeight: "bold",
-    marginBottom: 20,
   },
 
   input: {
@@ -101,7 +124,7 @@ const styles = StyleSheet.create({
   },
 
   contentInput: {
-  height: "100",
+    height: "60%",
     textAlignVertical: "top",
   },
 
@@ -118,13 +141,26 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
 
+  list: {
+    flex: 1,
+  },
+
+  listContent: {
+    paddingBottom: 30,
+  },
+  emptyTextContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    marginVertical: 20,
+  },
+
   noteCard: {
     backgroundColor: "#f4f4f4",
     padding: 15,
     borderRadius: 8,
     marginBottom: 10,
     borderWidth: 2,
-    borderColor: '#999'
+    borderColor: "#999",
   },
 
   noteTitle: {
@@ -132,6 +168,19 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginBottom: 5,
   },
+
+  actionContainer: {
+    flexDirection: "row",
+    gap: 10,
+    marginTop: 20,
+  },
+
+  actionText: {
+    fontWeight: "bold",
+    color: "#000",
+  },
+
+  deleteText: {
+    color: "red",
+  },
 });
-
-

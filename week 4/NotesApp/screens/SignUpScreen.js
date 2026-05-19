@@ -16,13 +16,13 @@ const SignUpScreen = ({ navigation }) => {
     console.log("sign up form submitted", formData);
     return "";
   };
-
   const { formData, errors, handleChange, handleSubmit } = useForm(
     {
       email: "",
       password: "",
       confirmPassword: "",
     },
+    
     signupValidation,
     onPress,
   );
@@ -30,7 +30,7 @@ const SignUpScreen = ({ navigation }) => {
   return (
     <SafeAreaView style={styles.container}>
       <Text style={styles.sigInText}>Sign Up</Text>
-
+ 
       <TextInput
         placeholder="Enter your email"
         style={styles.input}
@@ -58,12 +58,11 @@ const SignUpScreen = ({ navigation }) => {
         placeholder="Confirm password"
         value={formData.confirmPassword}
         onChangeText={(confirmPassword) =>
-          handleChange(confirmPassword, "confirmPassword")
+        handleChange(confirmPassword, "confirmPassword")
         }
         style={styles.input}
         secureTextEntry
       />
-
       {errors.confirmPassword && (
         <Text style={styles.errorText}>
           {errors.confirmPassword}
@@ -78,10 +77,10 @@ const SignUpScreen = ({ navigation }) => {
       </Pressable>
 
       <Text style={styles.signUpText}>
-        Already have an account?{" "}
+        Already have an account?
         <Text
           style={styles.signInLink}
-          onPress={() => navigation.navigate("Login")}
+          onPress={() => navigation.push("Login")}
         >
           Sign In
         </Text>

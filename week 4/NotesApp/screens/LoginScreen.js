@@ -7,6 +7,8 @@ import {
   StyleSheet,
   Pressable,
   View,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { loginValidation } from "../validations/loginValidation";
@@ -20,6 +22,7 @@ export default function App({ navigation }) {
     navigation.navigate("Home");
   };
 
+ 
   const { formData, errors, handleChange, handleSubmit } = useForm(
     { email: "", password: "" },
     loginValidation,
@@ -28,47 +31,59 @@ export default function App({ navigation }) {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.sigInText}>Sign In</Text>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={styles.keyboardView}
+      >
+        <Text style={styles.sigInText}>Sign In</Text>
 
-      <View style={styles.form}>
-        <TextInput
-          placeholder="Enter your email"
-          style={styles.input}
-          value={formData.email}
-          onChangeText={(email) => handleChange(email, "email")}
-        />
-
-        {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
-             <View style={styles.passwordContainer}>
-
+        <View style={styles.form}>
           <TextInput
-            placeholder="Enter password"
-            value={formData.password}
-            onChangeText={(password) => handleChange(password, "password")}
+            placeholder="Enter your email"
             style={styles.input}
-            secureTextEntry={!showPassword}
+            value={formData.email}
+            onChangeText={(email) => handleChange(email, "email")}
           />
-          <Pressable  style={styles.iconContainer} onPress={() => setShowPassword((prev) => !prev)}>
-            <Ionicons name={showPassword ? "eye-off" : "eye"} size={18} color="gray"/>
+          {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
+          <View style={styles.passwordContainer}>
+            <TextInput
+              placeholder="Enter password"
+              value={formData.password}
+              onChangeText={(password) => handleChange(password, "password")} 
+              style={styles.input}
+              secureTextEntry={!showPassword}
+            />
+            <Pressable
+              style={styles.iconContainer}
+              onPress={() => setShowPassword((prev) => !prev)}
+            >
+              <Ionicons
+                name={showPassword ? "eye-off" : "eye"}
+                size={18}
+                color="gray"
+              />
+            </Pressable>
+          </View>
+        
+          {errors.password && (
+            <Text style={styles.errorText}>{errors.password}</Text>
+          )}
+       
+          <Pressable onPress={handleSubmit} style={styles.btnContainer}>
+            <Text style={styles.buttonText}>Sign In</Text>
           </Pressable>
         </View>
 
-        {errors.password && (
-          <Text style={styles.errorText}>{errors.password}</Text>
-        )}
-
-        <Pressable onPress={handleSubmit} style={styles.btnContainer}>
-          <Text style={styles.buttonText}>Sign In</Text>
-        </Pressable>
-      </View>
-
-      <View style={styles.singUpContainer}>
-        <Text style={styles.signUp}>Don't have an account?</Text>
-
-        <TouchableOpacity onPress={() => navigation.navigate("SignUp")}>
-          <Text style={[styles.singUpText, styles.signUp]}>Register Now!</Text>
-        </TouchableOpacity>
-      </View>
+        <View style={styles.singUpContainer}>
+          <Text style={styles.signUp}>Don't have an account?</Text>
+       
+          <TouchableOpacity onPress={() => navigation.push("SignUp")}>
+            <Text style={[styles.singUpText, styles.signUp]}>
+              Register Now!
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
@@ -80,6 +95,12 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 20,
+  },
+  keyboardView: {
+    flex: 1,
+    width: "100%",
+    justifyContent: "center",
+    alignItems: "center",
   },
 
   form: {
@@ -140,11 +161,11 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     marginLeft: 4,
   },
-    passwordContainer: {
+  passwordContainer: {
     position: "relative",
     width: "100%",
   },
-    iconContainer: {
+  iconContainer: {
     position: "absolute",
     right: 18,
     top: "60%",
