@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabase";
 import { Ionicons } from "@expo/vector-icons";
 import EmptyState from "../components/EmptyState ";
 import { User } from "@supabase/supabase-js";
+import NoteBox from "@/components/NoteBox";
 
 type Note = {
   id: string;
@@ -20,6 +21,7 @@ const Index = () => {
   const [loading, setLoading] = useState(true);
 
 const [user, setUser] = useState<User | null>(null);
+
   const fetchNotes = useCallback(async () => {
     if (notes.length === 0) {
       setLoading(true);
@@ -38,13 +40,13 @@ const [user, setUser] = useState<User | null>(null);
     }
 
 
-
     const { data, error } = await supabase
       .from("notes")
       .select("*")
       .eq("user_id", user.id)
       .order("created_at", { ascending: false });
-
+      
+      
     if (error) {
       console.log("Fetch error:", error.message);
       setLoading(false);
@@ -79,6 +81,7 @@ const [user, setUser] = useState<User | null>(null);
         note: item.id,
       },
     });
+    
   };
 
   const handleSignOut = async () => {
@@ -107,17 +110,8 @@ const [user, setUser] = useState<User | null>(null);
         style={({ pressed }) => [styles.card, pressed && { opacity: 0.75 }]}
       >
         <View style={styles.cardContent}>
-          <View style={styles.textBox}>
-            <Text numberOfLines={1} style={styles.title}>
-              {item.title?.trim()
-                ? item.title
-                : item.content?.trim().split(" ")[0] || "Untitled"}
-            </Text>
 
-            <Text numberOfLines={2} style={styles.content}>
-              {item.content || "No content"}
-            </Text>
-          </View>
+          <NoteBox item={item}/>
 
           <Pressable
             onPress={(e) => {
@@ -165,6 +159,7 @@ const [user, setUser] = useState<User | null>(null);
         ListEmptyComponent={<EmptyState />}
         renderItem={renderItem}
       />
+
 
       <Pressable
         style={styles.createButton}
@@ -242,7 +237,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
 
-  textBox: {
+  noteBox: {
     flex: 1,
   },
 
@@ -252,7 +247,7 @@ const styles = StyleSheet.create({
     color: "#222",
   },
 
-  content: {
+  date: {
     marginTop: 6,
     fontSize: 14,
     lineHeight: 20,

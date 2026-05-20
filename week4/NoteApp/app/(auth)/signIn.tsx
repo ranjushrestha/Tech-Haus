@@ -1,4 +1,5 @@
 import {
+  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -12,42 +13,58 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { supabase } from "@/lib/supabase";
+import { Controller, useForm } from "react-hook-form";
 
+type FormData = {
+  email: string;
+  password: string;
+};
 
 const SignIn = () => {
-  const initialState = { email: "", password: "" };
-
-  const [formData, setFormData] = useState(initialState);
-
   const [showPassword, setShowPassword] = useState(false);
+  const [authError, setAuthError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleChange = (value: string, fieldName: string) => {
-    setFormData({ ...formData, [fieldName]: value });
-  };
-
-const handleSubmit = async () => {
-  if (!formData.email.trim() || !formData.password.trim()) {
-    console.log("Email and password required");
-    return;
-  }
-
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email: formData.email.trim(),
-    password: formData.password,
+  const {
+    control,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<FormData>({
+    defaultValues: {
+      email: "",
+      password: "",
+    },
   });
 
-  if (error) {
-    console.log("Login error:", error.message);
-    return;
+  const onSubmit = async (data: FormData) => {
+    setAuthError("");
+    setLoading(true);
+
+    const { error } = await supabase.auth.signInWithPassword({
+      email: data.email.trim(),
+      password: data.password,
+    });
+
+   if (error) {
+  if (error.message.includes("confirmed")) {
+    setAuthError("Email not confirmed");
+  } else {
+    setAuthError("Invalid email or password");
   }
 
-  if (data.user) {
-    setFormData(initialState);
+  console.log("Login error:", error.message);
+  setLoading(false);
+  return;
+}
+   
+
+    reset();
+    setLoading(false);
     router.replace("/");
-  
-  }
-  console.log("login success")
-};
+
+    console.log("login success");
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -58,44 +75,102 @@ const handleSubmit = async () => {
         <View style={styles.card}>
           <Text style={styles.title}>Sign In</Text>
 
+          {authError ? (
+            <View style={styles.errorBox}>
+              <Text style={styles.errorText}>{authError}</Text>
+            </View>
+          ) : null}
+
           <View style={styles.form}>
-            <TextInput
-              placeholder="Enter your email"
-              placeholderTextColor="#979595"
-              value={formData.email}
-              onChangeText={(email) => handleChange(email, "email")}
-              style={styles.input}
+            <Controller
+              control={control}
+              name="email"
+              rules={{
+                required: "Email required",
+                pattern: {
+                  value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                  message: "Enter a valid email",
+                },
+              }}
+              render={({ field: { value, onChange, onBlur } }) => (
+                <TextInput
+                  placeholder="Enter your email"
+                  placeholderTextColor="#979595"
+                  value={value}
+                  onChangeText={onChange}
+                  onBlur={onBlur}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  
+                  style={styles.input}
+                />
+              )}
             />
+
+            {errors.email && (
+              <Text style={styles.fieldError}>{errors.email.message}</Text>
+            )}
+
             <View style={styles.passwordContainer}>
-              <TextInput
-                placeholder="Enter your password"
-                placeholderTextColor="#979595"
-                secureTextEntry={!showPassword}
-                value={formData.password}
-                onChangeText={(password) => handleChange(password, "password")}
-                style={styles.input}
+              <Controller
+                control={control}
+                name="password"
+                rules={{
+                  required: "Password required",
+                }}
+                render={({ field: { value, onChange } }) => (
+                  <TextInput
+                    placeholder="Enter your password"
+                    placeholderTextColor="#979595"
+                    secureTextEntry={!showPassword}
+                    value={value}
+                    onChangeText={(text) => {
+                      setAuthError("")
+                      onChange(text)
+                    }}
+                    style={styles.input}
+                  />
+                )}
               />
 
-              <Pressable style={styles.eyeContainer} onPress={() => setShowPassword((prev) => !prev)}>
+              <Pressable
+                style={styles.eyeContainer}
+                onPress={() => setShowPassword((prev) => !prev)}
+              >
                 <Ionicons
-                name={showPassword? 'eye-off' : 'eye'} size={16} color='gray' />
+                  name={showPassword ? "eye-off" : "eye"}
+                  size={16}
+                  color="gray"
+                />
               </Pressable>
             </View>
 
-            <Pressable style={styles.button} onPress={handleSubmit}>
-              <Text style={styles.buttonText}>Sign In</Text>
+            {errors.password && (
+              <Text style={styles.fieldError}>{errors.password.message}</Text>
+            )}
+
+            <Pressable
+              style={[styles.button, loading && styles.buttonDisabled]}
+              onPress={handleSubmit(onSubmit)}
+              disabled={loading}
+            >
+              {loading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text style={styles.buttonText}>Sign In</Text>
+              )}
             </Pressable>
           </View>
 
           <View style={styles.singUpContainer}>
-          <Text style={styles.signUp}>Don't have an account?</Text>
-       
-          <Pressable onPress={() => router.push("/signUp")}>
-            <Text style={[styles.singUpText, styles.signUp]}>
-              Register Now!
-            </Text>
-          </Pressable>
-        </View>
+            <Text style={styles.signUp}>Don't have an account?</Text>
+
+            <Pressable onPress={() => router.push("/signUp")}>
+              <Text style={[styles.singUpText, styles.signUp]}>
+                Register Now!
+              </Text>
+            </Pressable>
+          </View>
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -108,15 +183,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#ddaac6",
-    
-    
   },
 
   keyboardView: {
     flex: 1,
     marginHorizontal: 12,
-    justifyContent:'center'
-   
+    justifyContent: "center",
   },
 
   card: {
@@ -134,10 +206,20 @@ const styles = StyleSheet.create({
     color: "#333",
   },
 
+  errorBox: {
+    backgroundColor: "#c45a5a",
+    padding: 8,
+    borderRadius: 6,
+  },
+
+  errorText: {
+    color: "white",
+    textAlign: "center",
+  },
 
   form: {
-    gap: 16,
-    marginVertical:20
+    gap: 12,
+    marginVertical: 20,
   },
 
   input: {
@@ -151,6 +233,11 @@ const styles = StyleSheet.create({
     color: "#000",
   },
 
+  fieldError: {
+    color: "#b00020",
+    fontSize: 13,
+  },
+
   button: {
     backgroundColor: "#9b4d75",
     paddingVertical: 14,
@@ -159,22 +246,28 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
 
+  buttonDisabled: {
+    opacity: 0.7,
+  },
+
   buttonText: {
     color: "#fff",
     fontSize: 16,
     fontWeight: "600",
   },
-  passwordContainer:{
-    position:'relative',
-    width:"100%"
+
+  passwordContainer: {
+    position: "relative",
+    width: "100%",
   },
-  eyeContainer:{
-    position:'absolute',
-    right:18,
-    top: '60%',
-    transform:[{translateY: -12}]
+
+  eyeContainer: {
+    position: "absolute",
+    right: 18,
+    top: "50%",
+    transform: [{ translateY: -8 }],
   },
-  
+
   singUpContainer: {
     flexDirection: "row",
     justifyContent: "center",
@@ -184,7 +277,8 @@ const styles = StyleSheet.create({
   singUpText: {
     color: "#9b4d75",
   },
- signUp: {
+
+  signUp: {
     fontWeight: "400",
     fontSize: 14,
   },

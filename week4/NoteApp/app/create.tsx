@@ -22,6 +22,8 @@ const Notes = () => {
   const handleAdd = async () => {
     if (!title.trim() || !content.trim()) return;
 
+
+    //get user from db
     const {
       data: { user },
       error: userError,
@@ -32,12 +34,13 @@ const Notes = () => {
       return;
     }
 
+    //add data 
     const { data, error } = await supabase
       .from("notes")
       .insert({
         title: title.trim(),
         content: content.trim(),
-        user_id: user.id,
+        user_id: user.id, 
       })
       .select()
       .single();
@@ -59,7 +62,7 @@ const Notes = () => {
       visibilityTime: 1500,
     });
 
-    router.push('/')
+    router.dismissTo('/')
   };
 
   return (
