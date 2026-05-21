@@ -36,9 +36,8 @@ export default function NoteDetail() {
 
   const fetchSingleNote = async () => {
     if (!id) return;
-// set loading true as it takes time for data to load from db
+    // set loading true as it takes time for data to load from db
     setLoading(true);
-
 
     //get single note with specific id from db
     const { data, error } = await supabase
@@ -53,15 +52,13 @@ export default function NoteDetail() {
       return;
     }
 
-
     // set title from the retunred data
     setTitle(data.title);
     setContent(data.content);
-  
-    
+
     setLoading(false);
   };
-// transfer data to TextInput
+  // transfer data to TextInput
   const handleEdit = () => {
     setEditTitle(title);
     setEditContent(content);
@@ -73,8 +70,7 @@ export default function NoteDetail() {
 
     setSaving(true);
 
-
-    //send data to db with updated title and content 
+    //send data to db with updated title and content
     const { error } = await supabase
       .from("notes")
       .update({
@@ -92,10 +88,10 @@ export default function NoteDetail() {
     //update ui with new data
     setTitle(editTitle.trim());
     setContent(editContent.trim());
-     
-    
+
     setIsEditing(false);
     setSaving(false);
+    router.push("/list");
   };
 
   if (loading) {
@@ -107,7 +103,7 @@ export default function NoteDetail() {
   }
 
   return (
-    <SafeAreaView style={styles.container} edges={["top", "bottom"]}>
+    <View style={styles.container}>
       <KeyboardAvoidingView
         style={styles.keyboardContainer}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -167,15 +163,15 @@ export default function NoteDetail() {
           </ScrollView>
         </View>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-
-    paddingHorizontal: 20,
+    paddingHorizontal: 12,
+    backgroundColor: "#fff",
   },
   keyboardContainer: {
     flex: 1,

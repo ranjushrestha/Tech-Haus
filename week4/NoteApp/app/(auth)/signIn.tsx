@@ -41,33 +41,34 @@ const SignIn = () => {
     setAuthError("");
     setLoading(true);
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email: data.email.trim(),
-      password: data.password,
-    });
+    const { error, data: supaBaseUser } =
+      await supabase.auth.signInWithPassword({
+        email: data.email.trim(),
+        password: data.password,
+      });
+    console.log("DATA:", supaBaseUser);
 
-   if (error) {
-  if (error.message.includes("confirmed")) {
-    setAuthError("Email not confirmed");
-  } else {
-    setAuthError("Invalid email or password");
-  }
+    if (error) {
+      if (error.message.includes("confirmed")) {
+        setAuthError("Email not confirmed");
+      } else {
+        setAuthError("Invalid email or password");
+      }
 
-  console.log("Login error:", error.message);
-  setLoading(false);
-  return;
-}
-   
+      console.log("Login error:", error.message);
+      setLoading(false);
+      return;
+    }
 
     reset();
     setLoading(false);
-    router.replace("/");
+    router.replace("/list");
 
     console.log("login success");
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={styles.keyboardView}
@@ -101,7 +102,6 @@ const SignIn = () => {
                   onBlur={onBlur}
                   keyboardType="email-address"
                   autoCapitalize="none"
-                  
                   style={styles.input}
                 />
               )}
@@ -125,8 +125,8 @@ const SignIn = () => {
                     secureTextEntry={!showPassword}
                     value={value}
                     onChangeText={(text) => {
-                      setAuthError("")
-                      onChange(text)
+                      setAuthError("");
+                      onChange(text);
                     }}
                     style={styles.input}
                   />
@@ -173,7 +173,7 @@ const SignIn = () => {
           </View>
         </View>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </View>
   );
 };
 

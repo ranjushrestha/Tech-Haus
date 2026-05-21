@@ -26,6 +26,8 @@ const signUp = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+  // const user = useStore((state) => state.user);
+
   const [signUpError, setSignUpError] = useState("");
 
   const [loading, setLoading] = useState(false);
@@ -50,38 +52,58 @@ const signUp = () => {
       setSignUpError("");
 
       const { data, error } = await supabase.auth.signUp({
-        email: formData.email,
+        email: formData.email.trim().toLowerCase(),
         password: formData.password,
       });
 
-      console.log(data);
+      console.log("SIGNUP DATA:", data);
+      console.log("SIGNUP ERROR:", error);
 
       if (error) {
-        console.log(error.message);
         setSignUpError(error.message);
+
         return;
-      } else if (data.user?.identities?.length === 0) {
-        setSignUpError("User already exist");
-        return
-      } else {
-        Toast.show({
-          type: "success",
-          text1: "user created successfully",
-          position: "top",
-          visibilityTime: 1500,
-        });
       }
+
+      if (!data.user) {
+        setSignUpError("Signup failed. Please try again.");
+        return;
+      }
+
+      if (data.user.identities?.length === 0) {
+        setSignUpError("User already exists. Please sign in.");
+        return;
+      }
+
+      if (data.user.email_confirmed_at === null) {
+        Toast.show({
+          type: "info",
+          text1: "Verification pending",
+          text2: "Email already registered.",
+          position: "top",
+          visibilityTime: 4000,
+        });
+        reset();
+        return;
+      }
+
+      Toast.show({
+        type: "success",
+        text1: "User created successfully",
+        position: "top",
+        visibilityTime: 2000,
+      });
 
       reset();
     } catch (err) {
       console.log("CATCH ERROR:", err);
+      setSignUpError("Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
   };
-
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <KeyboardAvoidingView
         style={styles.keyboardView}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -107,10 +129,10 @@ const signUp = () => {
                   style={styles.input}
                   placeholder="Enter email"
                   value={value}
-                   onChangeText={(text) => {
-                      setSignUpError("")
-                      onChange(text)
-                    }}
+                  onChangeText={(text) => {
+                    setSignUpError("");
+                    onChange(text);
+                  }}
                   keyboardType="email-address"
                 />
               )}
@@ -136,8 +158,8 @@ const signUp = () => {
                     secureTextEntry={!showPassword}
                     value={value}
                     onChangeText={(text) => {
-                      setSignUpError("")
-                      onChange(text)
+                      setSignUpError("");
+                      onChange(text);
                     }}
                     style={styles.input}
                   />
@@ -172,9 +194,9 @@ const signUp = () => {
                     placeholderTextColor="#979595"
                     secureTextEntry={!showConfirmPassword}
                     value={value}
-                   onChangeText={(text) => {
-                      setSignUpError("")
-                      onChange(text)
+                    onChangeText={(text) => {
+                      setSignUpError("");
+                      onChange(text);
                     }}
                     style={styles.input}
                   />
@@ -207,13 +229,13 @@ const signUp = () => {
 
           <View style={styles.signInContainer}>
             <Text style={styles.signIn}>Already have an account?</Text>
-            <Pressable onPress={() => router.push("/signIn")}>
+            <Pressable onPress={() => router.dismissTo("/signIn")}>
               <Text style={[styles.singInText, styles.signIn]}>Sign In</Text>
             </Pressable>
           </View>
         </View>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </View>
   );
 };
 
