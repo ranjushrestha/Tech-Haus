@@ -6,6 +6,7 @@ import { Ionicons } from "@expo/vector-icons";
 import EmptyState from "../../components/EmptyState ";
 import NoteBox from "@/components/NoteBox";
 import { useStore } from "@/store/useStore";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 type Note = {
   id: string;
@@ -22,7 +23,7 @@ const Index = () => {
   const { user } = useStore();
 
   const fetchNotes = useCallback(async () => {
-    if (!user) return null;
+    if (!user) return;
 
     const { data, error } = await supabase
       .from("notes")
@@ -31,7 +32,7 @@ const Index = () => {
       .order("created_at", { ascending: false });
 
     if (error) {
-      console.log("Fetch error:", error.message);
+      console.log(error.message);
       setLoading(false);
       return;
     }
@@ -102,9 +103,9 @@ const Index = () => {
 
   if (loading) {
     return (
-      <View style={styles.center}>
+      <SafeAreaView style={styles.center}>
         <Text style={styles.loadingText}>Loading...</Text>
-      </View>
+      </SafeAreaView>
     );
   }
 

@@ -1,44 +1,58 @@
+import { Stack } from "expo-router";
+import { useEffect } from "react";
+import { ActivityIndicator, View } from "react-native";
 import { supabase } from "@/lib/supabase";
 import { useStore } from "@/store/useStore";
-import { Stack } from "expo-router";
-import { StatusBar } from "expo-status-bar";
-import { useEffect } from "react";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
+import { StatusBar } from "expo-status-bar";
 
 export default function RootLayout() {
-  const user = useStore((state) => state.user);
-  const setUserData = useStore((state) => state.setUserData);
-  const setAuthLoading = useStore((state) => state.setAuthLoading);
-
-  console.log("Current user:", user);
+  const { authLoading, setAuthLoading, setUserData } = useStore();
 
   useEffect(() => {
-    fetchUser();
+    const initializeAuth = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      setUserData(session?.user ?? null);
+      setAuthLoading(false);
+    };
+
+    initializeAuth();
+
+    //runs everytime when signin signout or token changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      console.log("auth changed user:", session?.user ?? null);
+
+      setUserData(session?.user ?? null);
+    });
+
+    //clean up
+    return () => subscription.unsubscribe();
   }, []);
 
-  async function fetchUser() {
-    setAuthLoading(true);
-    const { data, error } = await supabase.auth.getSession();
-
-    if (error) {
-      console.log("Session error:", error.message);
-      setAuthLoading(false);
-      return;
-    }
-
-    if (data.session?.user) {
-      setUserData(data.session.user);
-    }
-
-    console.log("session:", data.session?.user);
-
-    setAuthLoading(false);
+  if (authLoading) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <ActivityIndicator size="large" color="#9b4d75" />
+      </View>
+    );
   }
+
   return (
     <SafeAreaProvider>
-      <SafeAreaView style={{ flex: 1, backgroundColor: "#ddaac6" }}>
-        <StatusBar style="light" />
+      <SafeAreaView style={{ flex: 1 }}>
+        <StatusBar style="dark" />
 
         <Stack screenOptions={{ headerShown: false }} />
         <Toast />

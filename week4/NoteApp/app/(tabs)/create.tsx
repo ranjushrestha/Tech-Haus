@@ -1,7 +1,7 @@
 import { supabase } from "@/lib/supabase";
 import { router } from "expo-router";
 import { goBack } from "expo-router/build/global-state/routing";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -60,7 +60,7 @@ const Notes = () => {
       visibilityTime: 1500,
     });
 
-    router.push("/list");
+    router.dismissTo("/list");
   };
 
   return (
