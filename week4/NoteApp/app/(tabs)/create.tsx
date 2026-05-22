@@ -1,8 +1,9 @@
 import { supabase } from "@/lib/supabase";
 import { router } from "expo-router";
 import { goBack } from "expo-router/build/global-state/routing";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -11,26 +12,24 @@ import {
   TextInput,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 import { Ionicons } from "@expo/vector-icons";
+import { useStore } from "@/store/useStore";
 
 const Notes = () => {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
 
+  const [saving, setSaving] = useState(false);
+
+  const user = useStore((state) => state.user);
+
   const handleAdd = async () => {
     if (!title.trim() || !content.trim()) return;
 
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
+    if (!user) return null;
 
-    if (userError || !user) {
-      console.log("User not logged in");
-      return;
-    }
+    setSaving(true);
 
     const { data, error } = await supabase
       .from("notes")
@@ -42,12 +41,14 @@ const Notes = () => {
       .select()
       .single();
 
+    console.log(data);
+
+    setSaving(false);
+
     if (error) {
       console.log("Insert error:", error.message);
       return;
     }
-
-    console.log("Inserted note:", data);
 
     setTitle("");
     setContent("");
@@ -59,14 +60,14 @@ const Notes = () => {
       visibilityTime: 1500,
     });
 
-    router.push('/')
+    router.push("/list");
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-                <Pressable style={{ marginLeft: 2}} onPress={() => goBack()}>
-                  <Ionicons name="arrow-back" size={22}/>
-                  </Pressable>
+    <View style={styles.container}>
+      <Pressable style={{ marginLeft: 2 }} onPress={() => goBack()}>
+        <Ionicons name="arrow-back" size={22} />
+      </Pressable>
 
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -74,12 +75,15 @@ const Notes = () => {
       >
         <View style={styles.card}>
           <View style={styles.header}>
-             <Text style={styles.heading}>Create Note</Text>
-          <Pressable style={styles.checkButton} onPress={handleAdd}>
-            <Ionicons name="checkmark" size={28} color="#9b4d75"/>
-          </Pressable>
+            <Text style={styles.heading}>Create Note</Text>
+            <Pressable style={styles.checkButton} onPress={handleAdd}>
+              {saving ? (
+                <ActivityIndicator size="small" color="#9b4d75" />
+              ) : (
+                <Ionicons name="checkmark" size={28} color="#9b4d75" />
+              )}
+            </Pressable>
           </View>
-         
 
           <TextInput
             placeholder="Title"
@@ -96,11 +100,9 @@ const Notes = () => {
             textAlignVertical="top"
             style={styles.contentInput}
           />
-
-          
         </View>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </View>
   );
 };
 
@@ -110,7 +112,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
-    padding: "8%",
+    paddingHorizontal: 6,
+    padding: "4%",
   },
 
   keyboardContainer: {
@@ -134,8 +137,8 @@ const styles = StyleSheet.create({
 
   heading: {
     fontSize: 26,
-  fontWeight:'bold',
-    color: "#9b4d75"
+    fontWeight: "bold",
+    color: "#9b4d75",
   },
 
   checkButton: {
@@ -170,7 +173,4 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     fontSize: 16,
   },
-  
- 
-
 });

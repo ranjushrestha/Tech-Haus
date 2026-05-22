@@ -25,19 +25,21 @@ export default function NoteDetail() {
   const [editTitle, setEditTitle] = useState("");
   const [editContent, setEditContent] = useState("");
 
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
 
+  //fetch single note when id changes
   useEffect(() => {
     fetchSingleNote();
   }, [id]);
 
   const fetchSingleNote = async () => {
     if (!id) return;
-
+    // set loading true as it takes time for data to load from db
     setLoading(true);
 
+    //get single note with specific id from db
     const { data, error } = await supabase
       .from("notes")
       .select("id, title, content")
@@ -50,14 +52,13 @@ export default function NoteDetail() {
       return;
     }
 
+    // set title from the retunred data
     setTitle(data.title);
     setContent(data.content);
-    setEditTitle(data.title);
-    setEditContent(data.content);
 
     setLoading(false);
   };
-
+  // transfer data to TextInput
   const handleEdit = () => {
     setEditTitle(title);
     setEditContent(content);
@@ -69,6 +70,7 @@ export default function NoteDetail() {
 
     setSaving(true);
 
+    //send data to db with updated title and content
     const { error } = await supabase
       .from("notes")
       .update({
@@ -83,6 +85,7 @@ export default function NoteDetail() {
       return;
     }
 
+    //update ui with new data
     setTitle(editTitle.trim());
     setContent(editContent.trim());
 
@@ -99,7 +102,7 @@ export default function NoteDetail() {
   }
 
   return (
-    <SafeAreaView style={styles.container} edges={["top", "bottom"]}>
+    <View style={styles.container}>
       <KeyboardAvoidingView
         style={styles.keyboardContainer}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -159,15 +162,15 @@ export default function NoteDetail() {
           </ScrollView>
         </View>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-
-    paddingHorizontal: 20,
+    paddingHorizontal: 12,
+    backgroundColor: "#fff",
   },
   keyboardContainer: {
     flex: 1,
