@@ -75,24 +75,14 @@ const signUp = () => {
         return;
       }
 
-      if (data.user.email_confirmed_at === null) {
-        Toast.show({
-          type: "info",
-          text1: "Verification pending",
-          text2: "Email already registered.",
-          position: "top",
-          visibilityTime: 4000,
-        });
-        reset();
-        return;
-      }
-
       Toast.show({
         type: "success",
         text1: "User created successfully",
         position: "top",
         visibilityTime: 2000,
       });
+
+      // if email not confirmed show different toast
 
       reset();
     } catch (err) {

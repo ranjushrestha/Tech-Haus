@@ -14,6 +14,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { supabase } from "@/lib/supabase";
 import { Controller, useForm } from "react-hook-form";
+import { useStore } from "@/store/useStore";
 
 type FormData = {
   email: string;
@@ -37,6 +38,8 @@ const SignIn = () => {
     },
   });
 
+  const setUserData = useStore((state) => state.setUserData);
+
   const onSubmit = async (data: FormData) => {
     setAuthError("");
     setLoading(true);
@@ -46,6 +49,7 @@ const SignIn = () => {
         email: data.email.trim(),
         password: data.password,
       });
+
     console.log("DATA:", supaBaseUser);
 
     if (error) {
@@ -58,6 +62,10 @@ const SignIn = () => {
       console.log("Login error:", error.message);
       setLoading(false);
       return;
+    }
+
+    if (supaBaseUser.user) {
+      setUserData(supaBaseUser.user);
     }
 
     reset();

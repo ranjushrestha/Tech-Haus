@@ -25,7 +25,7 @@ export default function NoteDetail() {
   const [editTitle, setEditTitle] = useState("");
   const [editContent, setEditContent] = useState("");
 
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
 
@@ -91,7 +91,6 @@ export default function NoteDetail() {
 
     setIsEditing(false);
     setSaving(false);
-    router.push("/list");
   };
 
   if (loading) {

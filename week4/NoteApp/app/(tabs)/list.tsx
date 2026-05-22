@@ -22,14 +22,7 @@ const Index = () => {
   const { user } = useStore();
 
   const fetchNotes = useCallback(async () => {
-    setLoading(true);
-
-    if (!user) {
-      console.log("User not logged in");
-      setNotes([]);
-      setLoading(false);
-      return;
-    }
+    if (!user) return null;
 
     const { data, error } = await supabase
       .from("notes")
@@ -50,7 +43,7 @@ const Index = () => {
   useFocusEffect(
     useCallback(() => {
       fetchNotes();
-    }, [fetchNotes]),
+    }, []),
   );
 
   const handleDelete = async (item: Note) => {
@@ -80,7 +73,7 @@ const Index = () => {
       console.log("Sign out error:", error.message);
       return;
     }
-
+    console.log("user signed out");
     router.replace("/signIn");
   };
 
@@ -120,18 +113,9 @@ const Index = () => {
       <View style={styles.header}>
         <Text style={styles.heading}>My Notes</Text>
 
-        {user ? (
-          <Pressable style={styles.signOutButton} onPress={handleSignOut}>
-            <Text style={styles.signOutText}>Sign Out</Text>
-          </Pressable>
-        ) : (
-          <Pressable
-            style={styles.signOutButton}
-            onPress={() => router.push("/signIn")}
-          >
-            <Text style={styles.signOutText}>Sign In</Text>
-          </Pressable>
-        )}
+        <Pressable style={styles.signOutButton} onPress={handleSignOut}>
+          <Text style={styles.signOutText}>Sign Out</Text>
+        </Pressable>
       </View>
 
       {notes.length > 0 && (

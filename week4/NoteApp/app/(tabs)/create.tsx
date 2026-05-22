@@ -27,10 +27,7 @@ const Notes = () => {
   const handleAdd = async () => {
     if (!title.trim() || !content.trim()) return;
 
-    if (!user) {
-      console.log("User not logged in");
-      return;
-    }
+    if (!user) return null;
 
     setSaving(true);
 
