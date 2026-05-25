@@ -109,7 +109,7 @@ export default function NoteDetail() {
       >
         <View style={styles.header}>
           <Pressable style={styles.iconButton} onPress={() => router.back()}>
-            <Ionicons name="arrow-back" size={24} color="#333" />
+            <Ionicons name="arrow-back" size={28} color="#333" />
           </Pressable>
 
           {isEditing ? (
@@ -169,7 +169,7 @@ export default function NoteDetail() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: 12,
+    paddingHorizontal: 8,
     backgroundColor: "#fff",
   },
   keyboardContainer: {

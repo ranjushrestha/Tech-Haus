@@ -75,6 +75,7 @@ const signUp = () => {
 
       if (!data.user.confirmed_at) {
         setSignUpError("Already registered. Confirm your email");
+        return;
       }
 
       Toast.show({
