@@ -26,8 +26,6 @@ const signUp = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  // const user = useStore((state) => state.user);
-
   const [signUpError, setSignUpError] = useState("");
 
   const [loading, setLoading] = useState(false);
@@ -75,14 +73,16 @@ const signUp = () => {
         return;
       }
 
+      if (!data.user.confirmed_at) {
+        setSignUpError("Already registered. Confirm your email");
+      }
+
       Toast.show({
         type: "success",
         text1: "User created successfully",
         position: "top",
         visibilityTime: 2000,
       });
-
-      // if email not confirmed show different toast
 
       reset();
     } catch (err) {
@@ -103,6 +103,7 @@ const signUp = () => {
           {signUpError && (
             <Text style={{ color: "#cb5a5a" }}>{signUpError}</Text>
           )}
+
           <View style={styles.form}>
             <Controller
               control={control}
@@ -216,7 +217,6 @@ const signUp = () => {
               )}
             </Pressable>
           </View>
-
           <View style={styles.signInContainer}>
             <Text style={styles.signIn}>Already have an account?</Text>
             <Pressable onPress={() => router.dismissTo("/signIn")}>
