@@ -148,7 +148,7 @@ const Notes = () => {
                     source={{ uri: image }}
                     style={{
                       width: 300,
-                      height: 200,
+                      height: 180,
                       objectFit: "cover",
                       borderRadius: 20,
                       borderWidth: 4,
