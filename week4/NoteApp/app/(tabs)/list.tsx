@@ -1,4 +1,12 @@
-import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
+import {
+  FlatList,
+  Pressable,
+  StyleSheet,
+  Switch,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import React, { useCallback, useState } from "react";
 import { router, useFocusEffect } from "expo-router";
 import { supabase } from "@/lib/supabase";
@@ -80,10 +88,7 @@ const Index = () => {
 
   const renderItem = ({ item }: { item: Note }) => {
     return (
-      <Pressable
-        onPress={() => handleView(item)}
-        style={({ pressed }) => [styles.card, pressed && { opacity: 0.75 }]}
-      >
+      <Pressable onPress={() => handleView(item)} style={styles.card}>
         <View style={styles.cardContent}>
           <NoteBox item={item} />
 
@@ -94,7 +99,7 @@ const Index = () => {
             }}
             style={styles.deleteButton}
           >
-            <Ionicons name="trash-outline" size={22} color="red" />
+            <Ionicons name="trash-outline" size={24} color="red" />
           </Pressable>
         </View>
       </Pressable>
@@ -112,7 +117,9 @@ const Index = () => {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.heading}>My Notes</Text>
+        <View style={styles.headerLeft}>
+          <Text style={styles.heading}>My Notes</Text>
+        </View>
 
         <Pressable style={styles.signOutButton} onPress={handleSignOut}>
           <Text style={styles.signOutText}>Sign Out</Text>
@@ -120,9 +127,11 @@ const Index = () => {
       </View>
 
       {notes.length > 0 && (
-        <Text style={styles.subHeading}>
-          {notes.length} {notes.length === 1 ? "note" : "notes"}
-        </Text>
+        <View style={styles.countBadge}>
+          <Text style={styles.countText}>
+            {notes.length} {notes.length === 1 ? "note" : "notes"}
+          </Text>
+        </View>
       )}
 
       <FlatList
@@ -152,15 +161,15 @@ export default Index;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: "#f3dbdb",
     paddingHorizontal: 16,
-    padding: "4%",
   },
 
   center: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: "#f3dbdb",
   },
 
   loadingText: {
@@ -170,22 +179,40 @@ const styles = StyleSheet.create({
   },
 
   header: {
-    marginBottom: 16,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+    paddingVertical: 12,
+    marginBottom: 2,
+  },
+
+  headerLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
   },
 
   heading: {
-    fontSize: 30,
-    fontWeight: "800",
+    fontSize: 32,
+    fontWeight: "700",
     color: "#9b4d75",
+    letterSpacing: -0.3,
   },
 
-  subHeading: {
-    marginBottom: 4,
-    fontSize: 14,
-    color: "#843d54",
+  countBadge: {
+    marginBottom: 12,
+    backgroundColor: "#efbcbf",
+    paddingVertical: 3,
+    paddingHorizontal: 6,
+    alignSelf: "flex-start",
+    borderRadius: 999,
+  },
+
+  countText: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: "#9b4d75",
+    textAlign: "center",
   },
 
   listContent: {
@@ -198,41 +225,47 @@ const styles = StyleSheet.create({
   },
 
   card: {
-    borderRadius: 18,
-    borderWidth: 1.2,
-    borderColor: "#e6c7d7",
-    backgroundColor: "#fff",
+    borderRadius: 20,
+    backgroundColor: "#fef1f1",
     padding: 16,
     marginBottom: 12,
+    borderTopWidth: 0.4,
+    borderRightWidth: 0.4,
+    borderColor: "#9b6882",
   },
 
   cardContent: {
     flexDirection: "row",
     alignItems: "flex-start",
     justifyContent: "space-between",
-    gap: 12,
+    gap: 14,
   },
 
   deleteButton: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#fff1f1",
+    backgroundColor: "#fdf0f0",
   },
 
   createButton: {
     position: "absolute",
     right: 20,
-    bottom: 10,
+    bottom: 12,
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "center",
     gap: 6,
     backgroundColor: "#9b4d75",
-    paddingHorizontal: 18,
-    paddingVertical: 13,
+    padding: 16,
     borderRadius: 999,
+    shadowColor: "#9b4d75",
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 6,
   },
 
   createButtonText: {
@@ -242,16 +275,18 @@ const styles = StyleSheet.create({
   },
 
   signOutButton: {
-    marginTop: 12,
-    alignSelf: "flex-start",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
     backgroundColor: "#9b4d75",
-    paddingHorizontal: 14,
+    paddingHorizontal: 12,
     paddingVertical: 10,
-    borderRadius: 10,
+    borderRadius: 999,
   },
 
   signOutText: {
-    color: "white",
+    color: "#fff",
     fontWeight: "600",
+    fontSize: 13,
   },
 });

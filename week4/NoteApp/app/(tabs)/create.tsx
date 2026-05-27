@@ -24,15 +24,39 @@ const Notes = () => {
   const [content, setContent] = useState("");
 
   const [saving, setSaving] = useState(false);
-  const [noteError, setNoteError] = useState("");
 
   const [image, setImage] = useState<string | null>();
 
   const user = useStore((state) => state.user);
 
+  //   const uploadImage = async (userId: string, imageUri: string) => {
+  //convert uri to string
+  //     const response = await fetch(imageUri)
+  // const blob = await response.blob()
+
+  // const filePath = `${userId}-${Date.now()}.jpg
+  // const {data, error} = await supabase.storage
+  //.from("note-images")
+  //.upload(filePath, blob, {
+  //contentType: "image/jpeg",
+  //})
+
+  // if (error) {
+  //   console.error("Upload error:", error.message);
+  //   return null;
+  // }
+
+  // // Get public URL
+  // const {
+  //   data: { publicUrl },
+  // } = supabase.storage.from("note-images").getPublicUrl(data.path);
+
+  // return publicUrl;
+
+  //   };
+
   const handleAdd = async () => {
     if (!title.trim() || !content.trim()) {
-      setNoteError("fill all fields");
       return;
     }
 
@@ -40,6 +64,17 @@ const Notes = () => {
 
     setSaving(true);
 
+    //try(
+    // let imageUrl = null
+    //if(img){
+    //imageUrl = await uploadImage(user.id, image)
+    //}
+
+    // )catch(err){
+    //console.log(err.message)
+    //setLoading(false)}
+
+    //note
     const { data, error } = await supabase
       .from("notes")
       .insert({
@@ -66,7 +101,7 @@ const Notes = () => {
       type: "success",
       text1: "Note saved successfully",
       position: "top",
-      visibilityTime: 1500,
+      visibilityTime: 1000,
     });
 
     router.dismissTo("/list");
@@ -100,16 +135,28 @@ const Notes = () => {
           flexDirection: "row",
           justifyContent: "space-between",
           alignItems: "center",
+          marginBottom: 4,
         }}
       >
-        <Pressable style={{ marginLeft: 2 }} onPress={() => goBack()}>
-          <Ionicons name="arrow-back" size={28} />
+        <Pressable
+          style={{
+            width: 38,
+            height: 38,
+            borderRadius: 19,
+            justifyContent: "center",
+            alignItems: "center",
+            backgroundColor: "#edcece",
+          }}
+          onPress={() => goBack()}
+        >
+          <Ionicons name="arrow-back" size={22} color="#9b4d75" />
         </Pressable>
+        <Text style={styles.heading}>Create Note</Text>
         <Pressable style={styles.checkButton} onPress={handleAdd}>
           {saving ? (
             <ActivityIndicator size="small" color="#9b4d75" />
           ) : (
-            <Ionicons name="checkmark" size={30} color="#9b4d75" />
+            <Ionicons name="checkmark-circle" size={22} color="#9b4d75" />
           )}
         </Pressable>
       </View>
@@ -119,65 +166,31 @@ const Notes = () => {
         style={styles.keyboardContainer}
       >
         <View style={styles.card}>
-          <Text style={styles.heading}>Create Note</Text>
-
-          <Text style={{ fontSize: 14, color: "red" }}>{noteError}</Text>
-
           <TextInput
             placeholder="Title"
             value={title}
-            onChangeText={(title) => {
-              setNoteError("");
-              setTitle(title);
-            }}
+            onChangeText={setTitle}
             style={styles.titleInput}
           />
 
           <ScrollView showsVerticalScrollIndicator={false}>
-            <View
-              style={{
-                overflow: "hidden",
-              }}
-            >
-              <Pressable
-                style={{ justifyContent: "center", alignItems: "center" }}
-                onPress={pickImage}
-              >
+            <View style={styles.imageContainer}>
+              <Pressable style={styles.imagePicker} onPress={pickImage}>
                 {image ? (
-                  <Image
-                    source={{ uri: image }}
-                    style={{
-                      width: 300,
-                      height: 180,
-                      objectFit: "cover",
-                      borderRadius: 20,
-                      borderWidth: 4,
-                      borderColor: "#9f798d",
-                    }}
-                  />
+                  <Image source={{ uri: image }} style={styles.image} />
                 ) : (
-                  <View
-                    style={{
-                      width: 100,
-                      height: 80,
-                      justifyContent: "center",
-                      alignItems: "center",
-                    }}
-                  >
+                  <View style={styles.imagePlaceholder}>
                     <Ionicons name="image-outline" size={22} color="#9b4d75" />
-                    <Text style={{ color: "#9b4d75" }}>Select an image</Text>
+                    <Text style={styles.imageText}>Add an image</Text>
                   </View>
                 )}
               </Pressable>
             </View>
 
             <TextInput
-              placeholder="Content"
+              placeholder="write a note..."
               value={content}
-              onChangeText={(content) => {
-                setNoteError("");
-                setContent(content);
-              }}
+              onChangeText={setContent}
               multiline
               textAlignVertical="top"
               style={styles.contentInput}
@@ -194,8 +207,9 @@ export default Notes;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: "#f3dbdb",
     paddingHorizontal: 8,
+    padding: "2%",
   },
 
   keyboardContainer: {
@@ -218,7 +232,47 @@ const styles = StyleSheet.create({
   },
 
   checkButton: {
-    padding: 8,
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#edcece",
+  },
+  imageContainer: {
+    overflow: "hidden",
+    marginTop: 8,
+  },
+
+  imagePicker: {
+    width: "100%",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  image: {
+    width: "100%",
+    height: 180,
+    borderRadius: 20,
+  },
+
+  imagePlaceholder: {
+    width: "100%",
+    height: 120,
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 6,
+    borderRadius: 14,
+    borderWidth: 2,
+    borderColor: "#9b4d75",
+    borderStyle: "dotted",
+    backgroundColor: "#edcece",
+  },
+
+  imageText: {
+    color: "#9b4d75",
+    fontSize: 13,
+    fontWeight: "500",
   },
 
   titleInput: {

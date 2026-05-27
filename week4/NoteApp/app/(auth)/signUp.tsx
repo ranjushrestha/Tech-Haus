@@ -102,7 +102,9 @@ const signUp = () => {
         <View style={styles.card}>
           <Text style={styles.title}>Sign Up</Text>
           {signUpError && (
-            <Text style={{ color: "#cb5a5a" }}>{signUpError}</Text>
+            <View style={styles.errorBox}>
+              <Text style={styles.errorText}>{signUpError}</Text>
+            </View>
           )}
 
           <View style={styles.form}>
@@ -130,7 +132,9 @@ const signUp = () => {
               )}
             />
 
-            {errors.email && <Text>{errors.email.message}</Text>}
+            {errors.email && (
+              <Text style={styles.fieldError}>{errors.email.message}</Text>
+            )}
 
             <View style={styles.passwordContainer}>
               <Controller
@@ -168,7 +172,9 @@ const signUp = () => {
                   color="gray"
                 />
               </Pressable>
-              {errors.password && <Text>{errors.password.message}</Text>}
+              {errors.password && (
+                <Text style={styles.fieldError}>{errors.password.message}</Text>
+              )}
             </View>
 
             <View style={styles.passwordContainer}>
@@ -206,7 +212,9 @@ const signUp = () => {
               </Pressable>
 
               {errors.confirmPassword && (
-                <Text>{errors.confirmPassword.message}</Text>
+                <Text style={styles.fieldError}>
+                  {errors.confirmPassword.message}
+                </Text>
               )}
             </View>
 
@@ -235,7 +243,7 @@ export default signUp;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#ddaac6",
+    backgroundColor: "#f3dbdb",
   },
 
   keyboardView: {
@@ -259,6 +267,17 @@ const styles = StyleSheet.create({
     color: "#333",
   },
 
+  errorBox: {
+    backgroundColor: "#c45a5a",
+    padding: 8,
+    borderRadius: 6,
+  },
+
+  errorText: {
+    color: "white",
+    textAlign: "center",
+  },
+
   form: {
     gap: 16,
     marginVertical: 12,
@@ -272,6 +291,11 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     fontSize: 16,
     backgroundColor: "#f9f9f9",
+  },
+
+  fieldError: {
+    color: "#b00020",
+    fontSize: 13,
   },
 
   button: {

@@ -13,7 +13,7 @@ const EmptyState = () => {
 export default EmptyState;
 
 const styles = StyleSheet.create({
-      emptyBox: {
+  emptyBox: {
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: 24,

@@ -6,6 +6,7 @@ import { useStore } from "@/store/useStore";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 import { StatusBar } from "expo-status-bar";
+import "./global.css";
 
 export default function RootLayout() {
   const { authLoading, setAuthLoading, setUserData } = useStore();
@@ -43,6 +44,7 @@ export default function RootLayout() {
           justifyContent: "center",
           alignItems: "center",
         }}
+        // className="flex flex-1 justify-center items-center"
       >
         <ActivityIndicator size="large" color="#9b4d75" />
       </View>
@@ -51,7 +53,7 @@ export default function RootLayout() {
 
   return (
     <SafeAreaProvider>
-      <SafeAreaView style={{ flex: 1 }}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: "#f3dbdb" }}>
         <StatusBar style="dark" />
 
         <Stack screenOptions={{ headerShown: false }} />

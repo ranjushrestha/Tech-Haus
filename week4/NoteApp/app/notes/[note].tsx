@@ -107,26 +107,26 @@ export default function NoteDetail() {
         style={styles.keyboardContainer}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
-        <View style={styles.header}>
+        <View style={styles.topBar}>
           <Pressable style={styles.iconButton} onPress={() => router.back()}>
-            <Ionicons name="arrow-back" size={28} color="#333" />
+            <Ionicons name="arrow-back" size={24} color="#9b4d75" />
           </Pressable>
 
           {isEditing ? (
             <Pressable
-              style={styles.iconButton}
+              style={styles.checkButton}
               onPress={handleUpdate}
               disabled={saving}
             >
               {saving ? (
                 <ActivityIndicator size="small" color="#9b4d75" />
               ) : (
-                <Ionicons name="checkmark-outline" size={24} color="#9b4d75" />
+                <Ionicons name="checkmark-circle" size={28} color="#9b4d75" />
               )}
             </Pressable>
           ) : (
-            <Pressable style={styles.iconButton} onPress={handleEdit}>
-              <Ionicons name="create-outline" size={24} color="#9b4d75" />
+            <Pressable style={styles.checkButton} onPress={handleEdit}>
+              <Ionicons name="create-outline" size={22} color="#9b4d75" />
             </Pressable>
           )}
         </View>
@@ -170,7 +170,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: 8,
-    backgroundColor: "#fff",
+    backgroundColor: "#f3dbdb",
   },
   keyboardContainer: {
     flex: 1,
@@ -180,6 +180,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: "#f3dbdb",
   },
 
   loadingText: {
@@ -189,25 +190,30 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
 
-  header: {
+  topBar: {
     flexDirection: "row",
-    alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: 8,
-  },
-
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: "700",
-    color: "#333",
+    alignItems: "center",
+    paddingVertical: 6,
+    paddingHorizontal: 4,
   },
 
   iconButton: {
-    width: 42,
-    height: 42,
-
+    width: 38,
+    height: 38,
+    borderRadius: 19,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: "#edcece",
+  },
+
+  checkButton: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#edcece",
   },
 
   card: {
@@ -216,7 +222,8 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     borderColor: "#9b4d75",
     padding: 20,
-    marginTop: 12,
+    marginTop: 16,
+    marginHorizontal: 4,
   },
 
   title: {
