@@ -4,6 +4,7 @@ import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
+  Image,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -15,12 +16,19 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+type Note = {
+  title: string;
+  content: string;
+  image_url: string | null;
+};
+
 export default function NoteDetail() {
   const { note } = useLocalSearchParams();
   const id = Array.isArray(note) ? note[0] : note;
 
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
 
   const [editTitle, setEditTitle] = useState("");
   const [editContent, setEditContent] = useState("");
@@ -28,49 +36,56 @@ export default function NoteDetail() {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  //fetch single note when id changes
   useEffect(() => {
     fetchSingleNote();
   }, [id]);
 
   const fetchSingleNote = async () => {
     if (!id) return;
-    // set loading true as it takes time for data to load from db
-    setLoading(true);
 
-    //get single note with specific id from db
+    setLoading(true);
+    setError(null);
+
     const { data, error } = await supabase
       .from("notes")
-      .select("id, title, content")
+      .select("id, title, content, image_url")
       .eq("id", id)
-      .single();
+      .single<Note>();
 
-    if (error) {
-      console.log("Error viewing note:", error.message);
+    if (error || !data) {
+      console.log("Error viewing note:", error?.message);
+      setError("Failed to load note.");
       setLoading(false);
       return;
     }
 
-    // set title from the retunred data
     setTitle(data.title);
     setContent(data.content);
+    setImageUrl(data.image_url);
 
     setLoading(false);
   };
-  // transfer data to TextInput
+
   const handleEdit = () => {
     setEditTitle(title);
     setEditContent(content);
     setIsEditing(true);
   };
 
+  const handleCancel = () => {
+    setEditTitle(title);
+    setEditContent(content);
+    setIsEditing(false);
+  };
+
   const handleUpdate = async () => {
     if (!id) return;
 
     setSaving(true);
+    setError(null);
 
-    //send data to db with updated title and content
     const { error } = await supabase
       .from("notes")
       .update({
@@ -81,14 +96,13 @@ export default function NoteDetail() {
 
     if (error) {
       console.log("Update error:", error.message);
+      setError("Failed to update note.");
       setSaving(false);
       return;
     }
 
-    //update ui with new data
     setTitle(editTitle.trim());
     setContent(editContent.trim());
-
     setIsEditing(false);
     setSaving(false);
   };
@@ -97,6 +111,19 @@ export default function NoteDetail() {
     return (
       <SafeAreaView style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#9b4d75" />
+        <Text style={styles.loadingText}>Loading note...</Text>
+      </SafeAreaView>
+    );
+  }
+
+  if (error) {
+    return (
+      <SafeAreaView style={styles.loadingContainer}>
+        <Ionicons name="alert-circle-outline" size={36} color="#9b4d75" />
+        <Text style={styles.loadingText}>{error}</Text>
+        <Pressable style={styles.retryButton} onPress={fetchSingleNote}>
+          <Text style={styles.retryText}>Try again</Text>
+        </Pressable>
       </SafeAreaView>
     );
   }
@@ -113,17 +140,38 @@ export default function NoteDetail() {
           </Pressable>
 
           {isEditing ? (
-            <Pressable
-              style={styles.checkButton}
-              onPress={handleUpdate}
-              disabled={saving}
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 10,
+              }}
             >
-              {saving ? (
-                <ActivityIndicator size="small" color="#9b4d75" />
-              ) : (
-                <Ionicons name="checkmark-circle" size={28} color="#9b4d75" />
-              )}
-            </Pressable>
+              <Pressable
+                style={{
+                  width: 38,
+                  height: 38,
+                  borderRadius: 19,
+                  justifyContent: "center",
+                  alignItems: "center",
+                  backgroundColor: "#edcece",
+                }}
+                onPress={handleCancel}
+              >
+                <Ionicons name="close" size={22} color="#9b4d75" />
+              </Pressable>
+              <Pressable
+                style={styles.checkButton}
+                onPress={handleUpdate}
+                disabled={saving}
+              >
+                {saving ? (
+                  <ActivityIndicator size="small" color="#9b4d75" />
+                ) : (
+                  <Ionicons name="checkmark-circle" size={28} color="#9b4d75" />
+                )}
+              </Pressable>
+            </View>
           ) : (
             <Pressable style={styles.checkButton} onPress={handleEdit}>
               <Ionicons name="create-outline" size={22} color="#9b4d75" />
@@ -147,6 +195,10 @@ export default function NoteDetail() {
             showsVerticalScrollIndicator={false}
             contentContainerStyle={styles.scrollContent}
           >
+            {imageUrl ? (
+              <Image source={{ uri: imageUrl }} style={styles.noteImage} />
+            ) : null}
+
             {isEditing ? (
               <TextInput
                 value={editContent}
@@ -175,21 +227,29 @@ const styles = StyleSheet.create({
   keyboardContainer: {
     flex: 1,
   },
-
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#f3dbdb",
   },
-
   loadingText: {
     marginTop: 12,
     color: "#9b4d75",
     fontSize: 18,
     fontWeight: "600",
   },
-
+  retryButton: {
+    marginTop: 16,
+    backgroundColor: "#edcece",
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+    borderRadius: 14,
+  },
+  retryText: {
+    color: "#9b4d75",
+    fontWeight: "700",
+  },
   topBar: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -197,7 +257,6 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     paddingHorizontal: 4,
   },
-
   iconButton: {
     width: 38,
     height: 38,
@@ -206,7 +265,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#edcece",
   },
-
   checkButton: {
     width: 38,
     height: 38,
@@ -215,7 +273,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#edcece",
   },
-
   card: {
     flex: 1,
     borderWidth: 2,
@@ -225,7 +282,6 @@ const styles = StyleSheet.create({
     marginTop: 16,
     marginHorizontal: 4,
   },
-
   title: {
     fontSize: 24,
     fontWeight: "700",
@@ -235,7 +291,6 @@ const styles = StyleSheet.create({
     paddingBottom: 12,
     marginBottom: 12,
   },
-
   titleInput: {
     fontSize: 24,
     fontWeight: "700",
@@ -245,18 +300,22 @@ const styles = StyleSheet.create({
     paddingBottom: 12,
     marginBottom: 12,
   },
-
   scrollContent: {
     paddingTop: 10,
     paddingBottom: 30,
   },
-
+  noteImage: {
+    width: "100%",
+    height: 200,
+    borderRadius: 16,
+    marginBottom: 14,
+    backgroundColor: "#edcece",
+  },
   content: {
     fontSize: 16,
     lineHeight: 24,
     color: "#444",
   },
-
   contentInput: {
     minHeight: 350,
     fontSize: 16,

@@ -1,25 +1,29 @@
 import {
+  ActivityIndicator,
   FlatList,
   Pressable,
+  RefreshControl,
   StyleSheet,
-  Switch,
   Text,
-  TouchableOpacity,
   View,
 } from "react-native";
 import React, { useCallback, useState } from "react";
 import { router, useFocusEffect } from "expo-router";
 import { supabase } from "@/lib/supabase";
 import { Ionicons } from "@expo/vector-icons";
-import EmptyState from "../../components/EmptyState ";
 import NoteBox from "@/components/NoteBox";
+import DeleteModal from "@/components/DeleteModal";
 import { useStore } from "@/store/useStore";
 import { SafeAreaView } from "react-native-safe-area-context";
+import EmptyState from "@/components/EmptyState";
+import { deleteNote } from "@/lib/deleteNote";
+import Toast from "react-native-toast-message";
 
 type Note = {
   id: string;
   title: string;
   content: string;
+  image_url?: string | null;
   user_id?: string;
   created_at?: string;
 };
@@ -27,11 +31,16 @@ type Note = {
 const Index = () => {
   const [notes, setNotes] = useState<Note[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [deletingNote, setDeletingNote] = useState<Note | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const { user } = useStore();
 
   const fetchNotes = useCallback(async () => {
     if (!user) return;
+
+    setError(null);
 
     const { data, error } = await supabase
       .from("notes")
@@ -41,7 +50,9 @@ const Index = () => {
 
     if (error) {
       console.log(error.message);
+      setError("Failed to load notes");
       setLoading(false);
+
       return;
     }
 
@@ -52,18 +63,32 @@ const Index = () => {
   useFocusEffect(
     useCallback(() => {
       fetchNotes();
-    }, []),
+    }, [fetchNotes]),
   );
 
   const handleDelete = async (item: Note) => {
-    const { error } = await supabase.from("notes").delete().eq("id", item.id);
+    setDeleting(true);
 
-    if (error) {
-      console.log("Delete error:", error.message);
+    const result = await deleteNote(item.id, item.image_url);
+
+    if (!result.success) {
+      Toast.show({
+        type: "error",
+        text1: "Failed to delete note",
+        text2: result.error,
+      });
+      setDeleting(false);
       return;
     }
 
-    setNotes((prevNotes) => prevNotes.filter((note) => note.id !== item.id));
+    setNotes((prev) => prev.filter((n) => n.id !== item.id));
+    setDeleting(false);
+    setDeletingNote(null);
+
+    Toast.show({
+      type: "success",
+      text1: "Note deleted",
+    });
   };
 
   const handleView = (item: Note) => {
@@ -82,7 +107,7 @@ const Index = () => {
       console.log("Sign out error:", error.message);
       return;
     }
-    console.log("user signed out");
+
     router.replace("/signIn");
   };
 
@@ -92,14 +117,26 @@ const Index = () => {
         <View style={styles.cardContent}>
           <NoteBox item={item} />
 
-          <Pressable
-            onPress={(e) => {
-              e.stopPropagation();
-              handleDelete(item);
+          <DeleteModal
+            visible={deletingNote?.id === item.id}
+            onClose={() => {
+              setDeletingNote(null);
+              setDeleting(false);
             }}
-            style={styles.deleteButton}
+            onConfirm={() => handleDelete(item)}
+            noteTitle={item.title}
+            loading={deleting}
+          />
+
+          <Pressable
+            style={{
+              backgroundColor: "#f5b0b0",
+              padding: 6,
+              borderRadius: "50%",
+            }}
+            onPress={() => setDeletingNote(item)}
           >
-            <Ionicons name="trash-outline" size={24} color="red" />
+            <Ionicons name="trash-outline" size={22} color="#ec4545" />
           </Pressable>
         </View>
       </Pressable>
@@ -109,7 +146,22 @@ const Index = () => {
   if (loading) {
     return (
       <SafeAreaView style={styles.center}>
-        <Text style={styles.loadingText}>Loading...</Text>
+        <ActivityIndicator size="large" color="#9b4d75" />
+        <Text style={styles.loadingText}>Loading notes...</Text>
+      </SafeAreaView>
+    );
+  }
+
+  if (error) {
+    return (
+      <SafeAreaView style={styles.center}>
+        <Ionicons name="alert-circle-outline" size={42} color="#9b4d75" />
+
+        <Text style={styles.loadingText}>{error}</Text>
+
+        <Pressable style={styles.retryButton} onPress={fetchNotes}>
+          <Text style={styles.retryText}>Try Again</Text>
+        </Pressable>
       </SafeAreaView>
     );
   }
@@ -142,7 +194,9 @@ const Index = () => {
           styles.listContent,
           notes.length === 0 && styles.emptyListContent,
         ]}
-        ListEmptyComponent={<EmptyState />}
+        ListEmptyComponent={
+          <EmptyState emptyTitle="No notes yet!" emptyText="Create your note" />
+        }
         renderItem={renderItem}
       />
 
@@ -170,11 +224,27 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#f3dbdb",
+    paddingHorizontal: 20,
   },
 
   loadingText: {
     color: "#9b4d75",
-    fontSize: 22,
+    fontSize: 20,
+    fontWeight: "600",
+    marginTop: 12,
+    textAlign: "center",
+  },
+
+  retryButton: {
+    marginTop: 16,
+    backgroundColor: "#9b4d75",
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+    borderRadius: 999,
+  },
+
+  retryText: {
+    color: "white",
     fontWeight: "600",
   },
 
@@ -236,7 +306,7 @@ const styles = StyleSheet.create({
 
   cardContent: {
     flexDirection: "row",
-    alignItems: "flex-start",
+    alignItems: "center",
     justifyContent: "space-between",
     gap: 14,
   },
@@ -254,10 +324,8 @@ const styles = StyleSheet.create({
     position: "absolute",
     right: 20,
     bottom: 12,
-    flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    gap: 6,
     backgroundColor: "#9b4d75",
     padding: 16,
     borderRadius: 999,
@@ -266,12 +334,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 12,
     elevation: 6,
-  },
-
-  createButtonText: {
-    color: "white",
-    fontWeight: "700",
-    fontSize: 15,
   },
 
   signOutButton: {
