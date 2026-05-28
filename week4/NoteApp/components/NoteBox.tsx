@@ -53,7 +53,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 17,
     fontWeight: "700",
-    color: "#ffffff",
+    color: "#000",
     letterSpacing: -0.2,
   },
   preview: {

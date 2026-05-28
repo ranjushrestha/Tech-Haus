@@ -5,6 +5,7 @@ import {
   RefreshControl,
   StyleSheet,
   Text,
+  TextInput,
   View,
 } from "react-native";
 import React, { useCallback, useState } from "react";
@@ -34,6 +35,7 @@ const Index = () => {
   const [error, setError] = useState<string | null>(null);
   const [deletingNote, setDeletingNote] = useState<Note | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const { user } = useStore();
 
@@ -64,6 +66,10 @@ const Index = () => {
     useCallback(() => {
       fetchNotes();
     }, [fetchNotes]),
+  );
+
+  const filteredNotes = notes.filter((note) =>
+    note.title.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   const handleDelete = async (item: Note) => {
@@ -177,17 +183,39 @@ const Index = () => {
           <Text style={styles.signOutText}>Sign Out</Text>
         </Pressable>
       </View>
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          paddingHorizontal: 8,
+          borderWidth: 1,
+          borderRadius: 20,
+          marginBottom: 8,
+        }}
+      >
+        <Ionicons name="search" size={18} />
+        <TextInput
+          style={{ flex: 1 }}
+          placeholder="Search notes"
+          value={searchTerm}
+          onChangeText={setSearchTerm}
+        />
+        <Pressable onPress={() => setSearchTerm("")}>
+          <Ionicons name="close" size={18} />
+        </Pressable>
+      </View>
 
-      {notes.length > 0 && (
+      {filteredNotes.length > 0 && (
         <View style={styles.countBadge}>
           <Text style={styles.countText}>
-            {notes.length} {notes.length === 1 ? "note" : "notes"}
+            {filteredNotes.length}{" "}
+            {filteredNotes.length === 1 ? "note" : "notes"}
           </Text>
         </View>
       )}
 
       <FlatList
-        data={notes}
+        data={filteredNotes}
         keyExtractor={(item) => item.id}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={[
@@ -195,7 +223,14 @@ const Index = () => {
           notes.length === 0 && styles.emptyListContent,
         ]}
         ListEmptyComponent={
-          <EmptyState emptyTitle="No notes yet!" emptyText="Create your note" />
+          notes.length === 0 ? (
+            <EmptyState
+              emptyTitle="No notes yet!"
+              emptyText="Create your note"
+            />
+          ) : (
+            <EmptyState emptyTitle="" emptyText="no recent notes" />
+          )
         }
         renderItem={renderItem}
       />
@@ -322,7 +357,7 @@ const styles = StyleSheet.create({
 
   createButton: {
     position: "absolute",
-    right: 20,
+    right: "46%",
     bottom: 12,
     alignItems: "center",
     justifyContent: "center",
@@ -331,7 +366,7 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     shadowColor: "#9b4d75",
     shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.6,
     shadowRadius: 12,
     elevation: 6,
   },
