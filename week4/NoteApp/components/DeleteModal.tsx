@@ -4,6 +4,7 @@ import {
   Pressable,
   StyleSheet,
   Text,
+  TouchableWithoutFeedback,
   View,
 } from "react-native";
 
@@ -29,35 +30,37 @@ const DeleteModal = ({
       visible={visible}
       onRequestClose={onClose}
     >
-      <View style={styles.overlay}>
-        <View style={styles.modal}>
-          <Text style={styles.title}>Delete Note</Text>
-          <Text style={styles.message}>
-            Are you sure you want to delete
-            {noteTitle ? ` "${noteTitle}"` : " this note"}?
-          </Text>
-          <View style={styles.actions}>
-            <Pressable
-              style={styles.cancelButton}
-              onPress={onClose}
-              disabled={loading}
-            >
-              <Text style={styles.cancelText}>Cancel</Text>
-            </Pressable>
-            <Pressable
-              style={styles.deleteButton}
-              onPress={onConfirm}
-              disabled={loading}
-            >
-              {loading ? (
-                <ActivityIndicator size="small" color="white" />
-              ) : (
-                <Text style={styles.deleteText}>Delete</Text>
-              )}
-            </Pressable>
+      <TouchableWithoutFeedback onPress={onClose}>
+        <View style={styles.overlay}>
+          <View style={styles.modal}>
+            <Text style={styles.title}>Delete Note</Text>
+            <Text style={styles.message}>
+              Are you sure you want to delete
+              {noteTitle ? ` "${noteTitle}"` : " this note"}?
+            </Text>
+            <View style={styles.actions}>
+              <Pressable
+                style={styles.cancelButton}
+                onPress={onClose}
+                disabled={loading}
+              >
+                <Text style={styles.cancelText}>Cancel</Text>
+              </Pressable>
+              <Pressable
+                style={styles.deleteButton}
+                onPress={onConfirm}
+                disabled={loading}
+              >
+                {loading ? (
+                  <ActivityIndicator size="small" color="white" />
+                ) : (
+                  <Text style={styles.deleteText}>Delete</Text>
+                )}
+              </Pressable>
+            </View>
           </View>
         </View>
-      </View>
+      </TouchableWithoutFeedback>
     </Modal>
   );
 };
