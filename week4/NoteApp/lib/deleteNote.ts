@@ -7,8 +7,8 @@ export const deleteNote = async (id: string) => {
     if (error) {
       return { success: false, error: error.message };
     }
-    return { sucess: true };
+    return { success: true };
   } catch (err: any) {
-    return { sucess: false, error: err.message || "Error deleting note" };
+    return { success: false, error: err.message || "Error deleting note" };
   }
 };

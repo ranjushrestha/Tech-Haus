@@ -5,6 +5,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Pressable,
+  RefreshControl,
   StyleSheet,
   Text,
   TextInput,
@@ -38,9 +39,11 @@ const Index = () => {
   const [deletingNote, setDeletingNote] = useState<Note | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [refreshing, setRefreshing] = useState(false);
 
   const { user } = useStore();
 
+  // Fetch all notes for the logged-in user, ordered newest first
   const fetchNotes = useCallback(async () => {
     if (!user) return;
 
@@ -56,7 +59,6 @@ const Index = () => {
       console.log(error.message);
       setError("Failed to load notes");
       setLoading(false);
-
       return;
     }
 
@@ -64,16 +66,27 @@ const Index = () => {
     setLoading(false);
   }, [user]);
 
+  // Re-fetch notes every time this screen comes into focus
+  // (covers the case where a note was created or edited)
   useFocusEffect(
     useCallback(() => {
       fetchNotes();
     }, [fetchNotes]),
   );
 
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    setTimeout(() => {
+      fetchNotes();
+      setRefreshing(false);
+    }, 2000);
+  }, []);
+  // Filter notes by search term (title only)
   const filteredNotes = notes.filter((note) =>
     note.title.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
+  // Delete note + its image from storage (handled inside deleteNote helper)
   const handleDelete = async (item: Note) => {
     setDeleting(true);
 
@@ -84,12 +97,13 @@ const Index = () => {
         type: "error",
         text1: "Failed to delete note",
         text2: result.error,
-        visibilityTime: 1500,
       });
       setDeleting(false);
+
       return;
     }
 
+    // Remove from local state so the list updates instantly
     setNotes((prev) => prev.filter((n) => n.id !== item.id));
     setDeleting(false);
     setDeletingNote(null);
@@ -97,16 +111,13 @@ const Index = () => {
     Toast.show({
       type: "success",
       text1: "Note deleted",
-      visibilityTime: 1500,
     });
   };
 
   const handleView = (item: Note) => {
     router.push({
       pathname: "/notes/[note]",
-      params: {
-        note: item.id,
-      },
+      params: { note: item.id },
     });
   };
 
@@ -139,10 +150,10 @@ const Index = () => {
           />
 
           <Pressable
-            style={styles.deleteIconButton}
+            style={styles.deleteButton}
             onPress={() => setDeletingNote(item)}
           >
-            <Ionicons name="trash-outline" size={20} color="#9b4270" />
+            <Ionicons name="trash-outline" size={22} color="#ec4545" />
           </Pressable>
         </View>
       </Pressable>
@@ -162,9 +173,7 @@ const Index = () => {
     return (
       <SafeAreaView style={styles.center}>
         <Ionicons name="alert-circle-outline" size={42} color="#9b4d75" />
-
         <Text style={styles.loadingText}>{error}</Text>
-
         <Pressable style={styles.retryButton} onPress={fetchNotes}>
           <Text style={styles.retryText}>Try Again</Text>
         </Pressable>
@@ -174,43 +183,41 @@ const Index = () => {
 
   return (
     <View style={styles.container}>
+      {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerLeft}>
-          <Text style={styles.heading}>My Notes</Text>
+          <Text style={styles.greeting}>My Notes</Text>
+          <Text style={styles.subtitle}>
+            {notes.length} {notes.length === 1 ? "note" : "notes"} total
+          </Text>
         </View>
-
         <Pressable style={styles.signOutButton} onPress={handleSignOut}>
-          <Ionicons name="log-out-outline" size={16} color="#ffffff" />
+          <Ionicons name="log-out-outline" size={20} color="#ffffff" />
         </Pressable>
       </View>
+
+      {/* Search bar */}
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={{ flex: 1 }}
       >
         <View style={styles.searchBar}>
-          <Ionicons name="search" size={18} color="#9b4d75" />
+          <Ionicons name="search" size={16} color="#55557a" />
           <TextInput
             style={styles.searchInput}
-            placeholder="Search notes"
-            placeholderTextColor="#999"
+            placeholder="Search notes..."
+            placeholderTextColor="#55557a"
             value={searchTerm}
             onChangeText={setSearchTerm}
           />
           {searchTerm.length > 0 && (
-            <Pressable onPress={() => setSearchTerm("")}>
-              <Ionicons name="close" size={20} color="#9b4d75" />
+            <Pressable
+              onPress={() => setSearchTerm("")}
+              style={styles.clearButton}
+            >
+              <Ionicons name="close-circle" size={18} color="#55557a" />
             </Pressable>
           )}
         </View>
-
-        {filteredNotes.length > 0 && (
-          <View style={styles.countBadge}>
-            <Text style={styles.countText}>
-              {filteredNotes.length}{" "}
-              {filteredNotes.length === 1 ? "note" : "notes"}
-            </Text>
-          </View>
-        )}
 
         <FlatList
           data={filteredNotes}
@@ -218,28 +225,51 @@ const Index = () => {
           showsVerticalScrollIndicator={false}
           onScrollBeginDrag={() => Keyboard.dismiss()}
           keyboardShouldPersistTaps="handled"
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor="#9b4d75"
+            />
+          }
           contentContainerStyle={[
             styles.listContent,
-            notes.length === 0 && styles.emptyListContent,
+            filteredNotes.length === 0 && styles.emptyListContent,
           ]}
+          ListHeaderComponent={
+            searchTerm && filteredNotes.length > 0 ? (
+              <View style={styles.countBadge}>
+                <Ionicons name="search" size={13} color="#9b4d75" />
+                <Text style={styles.countText}>
+                  {filteredNotes.length} result
+                  {filteredNotes.length !== 1 ? "s" : ""}
+                </Text>
+              </View>
+            ) : null
+          }
           ListEmptyComponent={
             notes.length === 0 ? (
               <EmptyState
-                emptyTitle="No notes yet!"
-                emptyText="Create your note"
+                emptyTitle="No notes yet"
+                emptyText="Tap + to create your first note"
               />
             ) : (
-              <EmptyState emptyTitle="" emptyText="no recent notes" />
+              <EmptyState
+                emptyTitle="No results"
+                emptyText="Try a different search term"
+              />
             )
           }
           renderItem={renderItem}
         />
       </KeyboardAvoidingView>
+
+      {/* Floating create button */}
       <Pressable
         style={styles.createButton}
         onPress={() => router.push("/create")}
       >
-        <Ionicons name="add" size={28} color="white" />
+        <Ionicons name="add" size={26} color="white" />
       </Pressable>
     </View>
   );
@@ -251,9 +281,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#050508",
-    paddingHorizontal: 16,
+    paddingHorizontal: 20,
   },
-
   center: {
     flex: 1,
     justifyContent: "center",
@@ -261,122 +290,114 @@ const styles = StyleSheet.create({
     backgroundColor: "#050508",
     paddingHorizontal: 20,
   },
-
   loadingText: {
-    color: "#ccccdd",
-    fontSize: 16,
+    color: "#9b4d75",
+    fontSize: 20,
     fontWeight: "600",
     marginTop: 12,
     textAlign: "center",
   },
-
   retryButton: {
     marginTop: 16,
     backgroundColor: "#9b4d75",
-    paddingHorizontal: 24,
+    paddingHorizontal: 22,
     paddingVertical: 12,
     borderRadius: 12,
   },
-
   retryText: {
     color: "white",
     fontWeight: "600",
+    fontSize: 15,
   },
-
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingVertical: 12,
-    marginBottom: 8,
+    paddingTop: 8,
+    paddingBottom: 20,
   },
-
   headerLeft: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
+    flex: 1,
   },
-
-  heading: {
-    fontSize: 28,
+  greeting: {
+    fontSize: 30,
     fontWeight: "800",
     color: "#ffffff",
     letterSpacing: -0.5,
   },
-
+  subtitle: {
+    fontSize: 13,
+    color: "#55557a",
+    marginTop: 2,
+    fontWeight: "500",
+  },
   searchBar: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 14,
-    height: 44,
-    backgroundColor: "#12121e",
+    paddingHorizontal: 16,
+    height: 48,
     borderWidth: 1,
+    borderRadius: 14,
     borderColor: "#2a2a44",
-    borderRadius: 12,
-    marginBottom: 12,
+    backgroundColor: "#12121e",
+    marginBottom: 16,
     gap: 10,
   },
-
   searchInput: {
     flex: 1,
     fontSize: 15,
     color: "#ffffff",
-    paddingVertical: 0,
+    height: "100%",
   },
-
+  clearButton: {
+    padding: 2,
+  },
   countBadge: {
-    marginBottom: 12,
-    backgroundColor: "#1a1a2e",
-    paddingVertical: 4,
-    paddingHorizontal: 10,
-    alignSelf: "flex-start",
-    borderRadius: 999,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    marginBottom: 16,
+    paddingBottom: 4,
   },
-
   countText: {
     fontSize: 13,
     fontWeight: "600",
-    color: "#8888bb",
+    color: "#55557a",
   },
-
   listContent: {
     paddingBottom: 100,
   },
-
   emptyListContent: {
     flex: 1,
     justifyContent: "center",
   },
-
   card: {
     borderRadius: 16,
     backgroundColor: "#0a0a12",
     padding: 16,
-    marginBottom: 12,
-    borderTopWidth: 0.8,
-    borderRightWidth: 0.8,
-    borderColor: "#9b4d75",
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: "#1a1a2e",
   },
-
   cardContent: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    gap: 14,
+    gap: 12,
   },
-
-  deleteIconButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+  deleteButton: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#2d1122",
+    backgroundColor: "#1a0a0a",
+    borderWidth: 1,
+    borderColor: "#2d1111",
   },
-
   createButton: {
     position: "absolute",
-    right: "46%",
+    right: 20,
     bottom: 24,
     alignItems: "center",
     justifyContent: "center",
@@ -385,26 +406,19 @@ const styles = StyleSheet.create({
     height: 56,
     borderRadius: 28,
     shadowColor: "#9b4d75",
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.6,
-    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.5,
+    shadowRadius: 20,
     elevation: 8,
   },
-
   signOutButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
     alignItems: "center",
-    gap: 6,
+    justifyContent: "center",
     backgroundColor: "#12121e",
     borderWidth: 1,
-    borderColor: "#9b4d75",
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    borderRadius: 999,
-  },
-
-  signOutText: {
-    color: "#ccccdd",
-    fontWeight: "600",
-    fontSize: 13,
+    borderColor: "#2a2a44",
   },
 });

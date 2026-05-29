@@ -16,6 +16,7 @@ import {
 import Toast from "react-native-toast-message";
 import { Ionicons } from "@expo/vector-icons";
 import { useStore } from "@/store/useStore";
+import * as FileSystem from "expo-file-system/legacy";
 import * as ImagePicker from "expo-image-picker";
 
 const CreateNote = () => {
@@ -26,11 +27,13 @@ const CreateNote = () => {
 
   const user = useStore((state) => state.user);
 
+  // Step 1: Ask for permission to access the photo libraryr
   const requestPermissions = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     return status === "granted";
   };
 
+  // Step 2: Open the image picker and store the local URI
   const pickImage = async () => {
     const hasPermission = await requestPermissions();
     if (!hasPermission) {
@@ -43,27 +46,40 @@ const CreateNote = () => {
     }
 
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ["images"],
       allowsEditing: true,
       aspect: [4, 3],
       quality: 0.7,
     });
 
     if (!result.canceled) {
+      // This is a local file URI like: file:///var/mobile/.../photo.jpg
       setImage(result.assets[0].uri);
     }
   };
 
+  // Step 3: Upload image to Supabase Storage, return the public URL
   const uploadImage = async (userId: string, imageUri: string) => {
     try {
-      const response = await fetch(imageUri);
-      const blob = await response.blob();
+      // Read the local file as a base64 string (React Native safe approach)
+      const base64 = await FileSystem.readAsStringAsync(imageUri, {
+        encoding: "base64",
+      });
 
+      // Convert base64 string → raw binary bytes (ArrayBuffer)
+      // This is required because FormData/Blob don't work properly in React Native
+      const binaryStr = atob(base64);
+      const bytes = new Uint8Array(binaryStr.length);
+      for (let i = 0; i < binaryStr.length; i++) {
+        bytes[i] = binaryStr.charCodeAt(i);
+      }
+
+      // File path inside the bucket: userId/timestamp.jpg
       const filePath = `${userId}/${Date.now()}.jpg`;
 
       const { data, error } = await supabase.storage
         .from("note-images")
-        .upload(filePath, blob, {
+        .upload(filePath, bytes.buffer, {
           contentType: "image/jpeg",
           upsert: false,
         });
@@ -73,6 +89,7 @@ const CreateNote = () => {
         return null;
       }
 
+      // Get the permanent public URL for the uploaded file
       const { data: publicData } = supabase.storage
         .from("note-images")
         .getPublicUrl(data.path);
@@ -84,6 +101,7 @@ const CreateNote = () => {
     }
   };
 
+  // Step 4: Save the note (upload image first if one was picked, then insert note)
   const handleAdd = async () => {
     if (!title.trim() || !content.trim()) {
       Toast.show({
@@ -111,7 +129,7 @@ const CreateNote = () => {
           title: title.trim(),
           content: content.trim(),
           user_id: user.id,
-          image_url: imageUrl,
+          image_url: imageUrl, // null if no image was picked
         })
         .select()
         .single();
@@ -122,7 +140,6 @@ const CreateNote = () => {
           type: "error",
           text1: "Save failed",
           text2: error.message,
-          visibilityTime: 1500,
         });
         return;
       }
@@ -137,17 +154,16 @@ const CreateNote = () => {
         type: "success",
         text1: "Note saved successfully",
         position: "top",
-        visibilityTime: 1500,
+        visibilityTime: 1000,
       });
 
-      router.dismissTo("/list");
+      router.back();
     } catch (error) {
       console.log("Save note error:", error);
       Toast.show({
         type: "error",
         text1: "Something went wrong",
         text2: "Please try again.",
-        visibilityTime: 15000,
       });
     } finally {
       setSaving(false);
@@ -158,12 +174,15 @@ const CreateNote = () => {
     <View style={styles.container}>
       <View style={styles.header}>
         <Pressable style={styles.iconButton} onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={22} color="#9b4d75" />
+          <Ionicons name="chevron-back" size={24} color="#ffffff" />
         </Pressable>
 
-        <Text style={styles.heading}>Create Note</Text>
+        <Text style={styles.heading}>New Note</Text>
 
-        <Pressable style={styles.saveButton} onPress={handleAdd}>
+        <Pressable
+          style={[styles.iconButton, styles.saveButton]}
+          onPress={handleAdd}
+        >
           {saving ? (
             <ActivityIndicator size="small" color="#ffffff" />
           ) : (
@@ -176,45 +195,43 @@ const CreateNote = () => {
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={styles.keyboardContainer}
       >
-        <View style={styles.formArea}>
-          <View style={styles.titleSection}>
+        <ScrollView
+          style={styles.scroll}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View style={styles.card}>
             <TextInput
-              placeholder="Title"
+              placeholder="Note title"
               value={title}
               onChangeText={setTitle}
               style={styles.titleInput}
-              placeholderTextColor="#3a3a5c"
+              placeholderTextColor="#55557a"
             />
-          </View>
 
-          <View style={styles.imageContainer}>
             <Pressable style={styles.imagePicker} onPress={pickImage}>
               {image ? (
                 <Image source={{ uri: image }} style={styles.image} />
               ) : (
                 <View style={styles.imagePlaceholder}>
-                  <Ionicons name="image-outline" size={28} color="#55557a" />
-                  <Text style={styles.imageText}>Add image</Text>
+                  <Ionicons name="image-outline" size={20} color="#55557a" />
+                  <Text style={styles.imageText}>Add photo</Text>
                 </View>
               )}
             </Pressable>
-          </View>
 
-          <ScrollView
-            showsVerticalScrollIndicator={false}
-            style={styles.contentScroll}
-          >
             <TextInput
-              placeholder="Write a note..."
+              placeholder="Start writing..."
               value={content}
               onChangeText={setContent}
               multiline
               textAlignVertical="top"
               style={styles.contentInput}
-              placeholderTextColor="#3a3a5c"
+              placeholderTextColor="#55557a"
             />
-          </ScrollView>
-        </View>
+          </View>
+        </ScrollView>
       </KeyboardAvoidingView>
     </View>
   );
@@ -226,36 +243,42 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#050508",
-    paddingHorizontal: 14,
   },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingTop: 8,
-    paddingBottom: 20,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "#1a1a2e",
   },
   keyboardContainer: {
     flex: 1,
   },
-  formArea: {
+  scroll: {
     flex: 1,
-    backgroundColor: "#0a0a12",
-    borderRadius: 20,
+  },
+  scrollContent: {
     padding: 20,
-    marginBottom: 16,
+    paddingBottom: 40,
+  },
+  card: {
     borderWidth: 1,
-    borderColor: "#9b4d75",
+    borderRadius: 16,
+    borderColor: "#1a1a2e",
+    backgroundColor: "#0a0a12",
+    padding: 20,
   },
   heading: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: "700",
     color: "#ffffff",
     letterSpacing: -0.3,
   },
   iconButton: {
-    width: 40,
-    height: 40,
+    width: 38,
+    height: 38,
     borderRadius: 12,
     justifyContent: "center",
     alignItems: "center",
@@ -264,66 +287,50 @@ const styles = StyleSheet.create({
     borderColor: "#2a2a44",
   },
   saveButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    justifyContent: "center",
-    alignItems: "center",
     backgroundColor: "#9b4d75",
-  },
-  titleSection: {
-    borderBottomWidth: 1,
-    borderBottomColor: "#2a2a44",
-    marginBottom: 20,
-    paddingBottom: 4,
-  },
-  titleInput: {
-    fontSize: 24,
-    fontWeight: "700",
-    color: "#ffffff",
-    paddingVertical: 8,
-    letterSpacing: -0.3,
-  },
-  imageContainer: {
-    marginBottom: 20,
+    borderColor: "#9b4d75",
   },
   imagePicker: {
     width: "100%",
-    justifyContent: "center",
-    alignItems: "center",
+    marginBottom: 16,
   },
   image: {
     width: "100%",
     height: 180,
-    borderRadius: 16,
+    borderRadius: 12,
   },
   imagePlaceholder: {
     width: "100%",
     height: 100,
     justifyContent: "center",
     alignItems: "center",
-    gap: 8,
-    borderRadius: 16,
+    gap: 6,
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: "#9b4d75",
+    borderColor: "#2a2a44",
     borderStyle: "dashed",
     backgroundColor: "#12121e",
+    flexDirection: "row",
   },
   imageText: {
     color: "#55557a",
     fontSize: 14,
     fontWeight: "500",
   },
-  contentScroll: {
-    flex: 1,
+  titleInput: {
+    borderBottomWidth: 1,
+    borderColor: "#2a2a44",
+    marginBottom: 20,
+    paddingBottom: 12,
+    fontSize: 22,
+    fontWeight: "700",
+    color: "#ffffff",
   },
   contentInput: {
-    flex: 1,
-    fontSize: 16,
+    minHeight: 280,
+    fontSize: 15,
     lineHeight: 24,
+    color: "#cccccc",
     textAlignVertical: "top",
-    color: "#ccccdd",
-    paddingTop: 0,
-    minHeight: 200,
   },
 });

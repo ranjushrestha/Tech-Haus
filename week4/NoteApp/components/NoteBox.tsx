@@ -63,7 +63,7 @@ const styles = StyleSheet.create({
   preview: {
     fontSize: 13,
     lineHeight: 18,
-    color: "#999",
+    color: "#8888bb",
   },
   date: {
     marginTop: 6,

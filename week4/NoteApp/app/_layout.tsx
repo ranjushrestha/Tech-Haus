@@ -56,7 +56,7 @@ export default function RootLayout() {
         <StatusBar style="light" />
 
         <Stack screenOptions={{ headerShown: false }} />
-        <Toast />
+        <Toast swipeable={true} />
       </SafeAreaView>
     </SafeAreaProvider>
   );
