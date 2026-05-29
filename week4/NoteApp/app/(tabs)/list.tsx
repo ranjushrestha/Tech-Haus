@@ -75,7 +75,7 @@ const Index = () => {
   const handleDelete = async (item: Note) => {
     setDeleting(true);
 
-    const result = await deleteNote(item.id, item.image_url);
+    const result = await deleteNote(item.id);
 
     if (!result.success) {
       Toast.show({

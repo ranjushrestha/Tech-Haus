@@ -68,6 +68,10 @@ export default function NoteDetail() {
     setLoading(false);
   };
 
+  // const handleDelete = (id) => {
+
+  // }
+
   const handleEdit = () => {
     setEditTitle(title);
     setEditContent(content);
@@ -173,9 +177,26 @@ export default function NoteDetail() {
               </Pressable>
             </View>
           ) : (
-            <Pressable style={styles.checkButton} onPress={handleEdit}>
-              <Ionicons name="create-outline" size={22} color="#9b4d75" />
-            </Pressable>
+            <View
+              style={{ flexDirection: "row", alignItems: "center", gap: 6 }}
+            >
+              <Pressable
+                style={{
+                  width: 38,
+                  height: 38,
+                  borderRadius: 19,
+                  justifyContent: "center",
+                  alignItems: "center",
+                  backgroundColor: "#edcece",
+                }}
+              >
+                <Ionicons name="trash-outline" size={22} color="red" />
+              </Pressable>
+
+              <Pressable style={styles.checkButton} onPress={handleEdit}>
+                <Ionicons name="create-outline" size={22} color="#9b4d75" />
+              </Pressable>
+            </View>
           )}
         </View>
 
