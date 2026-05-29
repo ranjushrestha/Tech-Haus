@@ -1,3 +1,5 @@
+import DeleteModal from "@/components/DeleteModal";
+import { deleteNote } from "@/lib/deleteNote";
 import { supabase } from "@/lib/supabase";
 import { Ionicons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
@@ -15,8 +17,10 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Toast from "react-native-toast-message";
 
 type Note = {
+  id: string;
   title: string;
   content: string;
   image_url: string | null;
@@ -37,6 +41,9 @@ export default function NoteDetail() {
   const [saving, setSaving] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
+
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     fetchSingleNote();
@@ -68,9 +75,36 @@ export default function NoteDetail() {
     setLoading(false);
   };
 
-  // const handleDelete = (id) => {
+  const handleDelete = async (id: string) => {
+    setDeleting(true);
+    // const { error } = await supabase.from("notes").delete().eq("id", id);
 
-  // }
+    // if (error) {
+    //   console.log("Delete error:", error.message);
+    //   return;
+    // }
+
+    const result = await deleteNote(id);
+
+    if (!result.success) {
+      Toast.show({
+        type: "error",
+        text1: "Failed to delete note",
+        text2: result.error,
+        visibilityTime: 1000,
+      });
+      setDeleting(false);
+      return;
+    }
+
+    router.back();
+    setDeleting(false);
+    Toast.show({
+      type: "success",
+      text1: "Note deleted",
+      visibilityTime: 1000,
+    });
+  };
 
   const handleEdit = () => {
     setEditTitle(title);
@@ -140,61 +174,45 @@ export default function NoteDetail() {
       >
         <View style={styles.topBar}>
           <Pressable style={styles.iconButton} onPress={() => router.back()}>
-            <Ionicons name="arrow-back" size={24} color="#9b4d75" />
+            <Ionicons name="arrow-back" size={22} color="#9b4d75" />
           </Pressable>
 
           {isEditing ? (
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                gap: 10,
-              }}
-            >
-              <Pressable
-                style={{
-                  width: 38,
-                  height: 38,
-                  borderRadius: 19,
-                  justifyContent: "center",
-                  alignItems: "center",
-                  backgroundColor: "#edcece",
-                }}
-                onPress={handleCancel}
-              >
-                <Ionicons name="close" size={22} color="#9b4d75" />
+            <View style={styles.topActions}>
+              <Pressable style={styles.cancelButton} onPress={handleCancel}>
+                <Ionicons name="close" size={20} color="#8888bb" />
               </Pressable>
               <Pressable
-                style={styles.checkButton}
+                style={styles.saveButton}
                 onPress={handleUpdate}
                 disabled={saving}
               >
                 {saving ? (
-                  <ActivityIndicator size="small" color="#9b4d75" />
+                  <ActivityIndicator size="small" color="#ffffff" />
                 ) : (
-                  <Ionicons name="checkmark-circle" size={28} color="#9b4d75" />
+                  <Ionicons name="checkmark" size={22} color="#ffffff" />
                 )}
               </Pressable>
             </View>
           ) : (
-            <View
-              style={{ flexDirection: "row", alignItems: "center", gap: 6 }}
-            >
+            <View style={styles.topActions}>
+              <DeleteModal
+                visible={showModal}
+                onClose={() => setShowModal(!showModal)}
+                onConfirm={() => handleDelete(id)}
+                loading={deleting}
+                noteTitle={title}
+              />
+
               <Pressable
-                style={{
-                  width: 38,
-                  height: 38,
-                  borderRadius: 19,
-                  justifyContent: "center",
-                  alignItems: "center",
-                  backgroundColor: "#edcece",
-                }}
+                style={styles.iconButton}
+                onPress={() => setShowModal(true)}
               >
-                <Ionicons name="trash-outline" size={22} color="red" />
+                <Ionicons name="trash-outline" size={20} color="#9b4d75" />
               </Pressable>
 
-              <Pressable style={styles.checkButton} onPress={handleEdit}>
-                <Ionicons name="create-outline" size={22} color="#9b4d75" />
+              <Pressable style={styles.editButton} onPress={() => handleEdit()}>
+                <Ionicons name="create-outline" size={20} color="#ffffff" />
               </Pressable>
             </View>
           )}
@@ -207,6 +225,7 @@ export default function NoteDetail() {
               onChangeText={setEditTitle}
               placeholder="Title"
               style={styles.titleInput}
+              placeholderTextColor="#3a3a5c"
             />
           ) : (
             <Text style={styles.title}>{title}</Text>
@@ -228,6 +247,7 @@ export default function NoteDetail() {
                 multiline
                 textAlignVertical="top"
                 style={styles.contentInput}
+                placeholderTextColor="#3a3a5c"
               />
             ) : (
               <Text style={styles.content}>{content}</Text>
@@ -242,8 +262,8 @@ export default function NoteDetail() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: 8,
-    backgroundColor: "#f3dbdb",
+    paddingHorizontal: 12,
+    backgroundColor: "#050508",
   },
   keyboardContainer: {
     flex: 1,
@@ -252,7 +272,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#f3dbdb",
+    backgroundColor: "#050508",
   },
   loadingText: {
     marginTop: 12,
@@ -262,10 +282,12 @@ const styles = StyleSheet.create({
   },
   retryButton: {
     marginTop: 16,
-    backgroundColor: "#edcece",
-    paddingHorizontal: 18,
-    paddingVertical: 10,
-    borderRadius: 14,
+    backgroundColor: "#12121e",
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#2a2a44",
   },
   retryText: {
     color: "#9b4d75",
@@ -275,73 +297,106 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingVertical: 6,
-    paddingHorizontal: 4,
+    paddingTop: 8,
+    paddingBottom: 16,
+  },
+  screenTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#ffffff",
+    letterSpacing: -0.3,
+  },
+  topActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
   },
   iconButton: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
+    width: 40,
+    height: 40,
+    borderRadius: 12,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#edcece",
+    backgroundColor: "#12121e",
+    borderWidth: 1,
+    borderColor: "#2a2a44",
   },
-  checkButton: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
+  editButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#edcece",
+    backgroundColor: "#9b4d75",
+  },
+  cancelButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#12121e",
+    borderWidth: 1,
+    borderColor: "#2a2a44",
+  },
+  saveButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#9b4d75",
   },
   card: {
     flex: 1,
-    borderWidth: 2,
+    backgroundColor: "#0a0a12",
     borderRadius: 20,
-    borderColor: "#9b4d75",
     padding: 20,
-    marginTop: 16,
-    marginHorizontal: 4,
-    marginBottom: 20,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: "#9b4d75",
   },
   title: {
-    fontSize: 24,
-    fontWeight: "700",
-    color: "#2f2f2f",
+    fontSize: 26,
+    fontWeight: "800",
+    color: "#ffffff",
+    paddingBottom: 14,
+    marginBottom: 16,
     borderBottomWidth: 1,
-    borderBottomColor: "#9b4d75",
-    paddingBottom: 12,
-    marginBottom: 12,
+    borderBottomColor: "#2a2a44",
+    letterSpacing: -0.5,
   },
   titleInput: {
-    fontSize: 24,
-    fontWeight: "700",
-    color: "#2f2f2f",
+    fontSize: 26,
+    fontWeight: "800",
+    color: "#ffffff",
     borderBottomWidth: 1,
-    borderBottomColor: "#9b4d75",
-    paddingBottom: 12,
-    marginBottom: 12,
+    borderBottomColor: "#2a2a44",
+    paddingBottom: 14,
+    marginBottom: 16,
+    letterSpacing: -0.5,
   },
   scrollContent: {
-    paddingTop: 10,
-    paddingBottom: 30,
+    paddingTop: 4,
+    paddingBottom: 40,
   },
   noteImage: {
     width: "100%",
     height: 200,
     borderRadius: 16,
-    marginBottom: 14,
-    backgroundColor: "#edcece",
+    marginBottom: 16,
+    backgroundColor: "#12121e",
   },
   content: {
     fontSize: 16,
-    lineHeight: 24,
-    color: "#444",
+    lineHeight: 26,
+    color: "#ccccdd",
   },
   contentInput: {
     minHeight: 350,
     fontSize: 16,
-    lineHeight: 24,
-    color: "#444",
+    lineHeight: 26,
+    color: "#ccccdd",
+    textAlignVertical: "top",
   },
 });

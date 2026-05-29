@@ -46,14 +46,13 @@ export default function RootLayout() {
         // className="flex flex-1 justify-center items-center"
       >
         <ActivityIndicator size="large" color="#9b4d75" />
-        {/* Pink accent kept */}
       </View>
     );
   }
 
   return (
     <SafeAreaProvider>
-      <SafeAreaView style={{ flex: 1, backgroundColor: "#0f111a" }}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: "#050508" }}>
         <StatusBar style="light" />
 
         <Stack screenOptions={{ headerShown: false }} />

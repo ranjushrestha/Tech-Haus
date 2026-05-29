@@ -13,7 +13,7 @@ const Index = () => {
           flex: 1,
           justifyContent: "center",
           alignItems: "center",
-          backgroundColor: "#0f111a",
+          backgroundColor: "#050508",
         }}
       >
         <ActivityIndicator size="large" color="#9b4d75" />

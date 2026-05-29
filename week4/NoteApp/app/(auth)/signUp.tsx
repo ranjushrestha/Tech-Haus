@@ -115,7 +115,7 @@ const signUp = () => {
               <Ionicons
                 name="alert-circle"
                 size={16}
-                color="#ff5252"
+                color="#ff3b5c"
                 style={{ marginRight: 6 }}
               />
               <Text style={styles.errorText}>{signUpError}</Text>
@@ -139,7 +139,7 @@ const signUp = () => {
                   <TextInput
                     style={[styles.input, errors.email && styles.inputError]}
                     placeholder="Enter email"
-                    placeholderTextColor="#4a5568"
+                    placeholderTextColor="#55557a"
                     value={value}
                     onChangeText={(text) => {
                       setSignUpError("");
@@ -177,7 +177,7 @@ const signUp = () => {
                   >
                     <TextInput
                       placeholder="Enter password"
-                      placeholderTextColor="#4a5568"
+                      placeholderTextColor="#55557a"
                       secureTextEntry={!showPassword}
                       value={value}
                       onChangeText={(text) => {
@@ -194,7 +194,7 @@ const signUp = () => {
                       <Ionicons
                         name={showPassword ? "eye-off" : "eye"}
                         size={18}
-                        color="#6b7280"
+                        color="#8888bb"
                       />
                     </Pressable>
                   </View>
@@ -226,7 +226,7 @@ const signUp = () => {
                   >
                     <TextInput
                       placeholder="Confirm password"
-                      placeholderTextColor="#4a5568"
+                      placeholderTextColor="#55557a"
                       secureTextEntry={!showConfirmPassword}
                       value={value}
                       onChangeText={(text) => {
@@ -242,7 +242,7 @@ const signUp = () => {
                       <Ionicons
                         name={showConfirmPassword ? "eye-off" : "eye"}
                         size={18}
-                        color="#6b7280"
+                        color="#8888bb"
                       />
                     </Pressable>
                   </View>
@@ -281,7 +281,7 @@ export default signUp;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#0f111a",
+    backgroundColor: "#050508",
   },
 
   keyboardView: {
@@ -292,107 +292,117 @@ const styles = StyleSheet.create({
 
   brandSection: {
     alignItems: "center",
-    marginBottom: 24,
+    marginBottom: 32,
   },
 
   logoCircle: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: "#1a1c2e",
+    width: 64,
+    height: 64,
+    borderRadius: 18,
+    backgroundColor: "#12121e",
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: 12,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: "#2a2a44",
   },
 
   brandName: {
-    fontSize: 28,
+    fontSize: 32,
     fontWeight: "800",
     color: "#ffffff",
     letterSpacing: -0.5,
+    marginBottom: 4,
   },
 
   brandTagline: {
     fontSize: 14,
-    color: "#6b7280",
-    marginTop: 4,
+    color: "#55557a",
+    letterSpacing: 0.2,
   },
 
   card: {
     width: "100%",
-    maxWidth: 380,
+    maxWidth: 400,
     alignSelf: "center",
+    backgroundColor: "#0a0a12",
+    borderRadius: 24,
+    padding: 28,
+    borderWidth: 1,
+    borderColor: "#1a1a2e",
   },
 
   title: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: "700",
     color: "#ffffff",
-    marginBottom: 20,
+    marginBottom: 24,
     letterSpacing: -0.3,
   },
 
   errorBox: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#3d1a1a",
-    padding: 12,
-    borderRadius: 10,
-    marginBottom: 16,
+    backgroundColor: "#2d1122",
+    padding: 14,
+    borderRadius: 12,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: "#4d1a33",
   },
 
   errorText: {
-    color: "#ff5252",
+    color: "#ff3b5c",
     fontSize: 14,
     flex: 1,
   },
 
   form: {
-    gap: 16,
+    gap: 20,
   },
 
   fieldLabel: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: "600",
-    color: "#6b7280",
-    marginBottom: 6,
+    color: "#55557a",
+    marginBottom: 8,
     textTransform: "uppercase",
-    letterSpacing: 0.5,
+    letterSpacing: 0.8,
   },
 
   input: {
     borderWidth: 1,
-    borderColor: "#252840",
-    borderRadius: 12,
-    paddingHorizontal: 14,
+    borderColor: "#2a2a44",
+    borderRadius: 14,
+    paddingHorizontal: 16,
     paddingVertical: 14,
     fontSize: 16,
-    backgroundColor: "#1a1c2e",
+    backgroundColor: "#12121e",
     color: "#ffffff",
   },
 
   inputError: {
-    borderColor: "#ff5252",
+    borderColor: "#ff3b5c",
   },
 
   fieldError: {
-    color: "#ff5252",
+    color: "#ff3b5c",
     fontSize: 13,
-    marginTop: 4,
+    marginTop: 6,
   },
 
   passwordContainer: {
     flexDirection: "row",
     alignItems: "center",
     borderWidth: 1,
-    borderColor: "#252840",
-    borderRadius: 12,
-    backgroundColor: "#1a1c2e",
+    borderColor: "#2a2a44",
+    borderRadius: 14,
+    backgroundColor: "#12121e",
   },
 
   passwordInput: {
     flex: 1,
-    paddingHorizontal: 14,
+    paddingHorizontal: 16,
     paddingVertical: 14,
     fontSize: 16,
     color: "#ffffff",
@@ -406,32 +416,33 @@ const styles = StyleSheet.create({
   button: {
     backgroundColor: "#9b4d75",
     paddingVertical: 16,
-    borderRadius: 12,
+    borderRadius: 14,
     alignItems: "center",
-    marginTop: 8,
+    marginTop: 12,
   },
 
   buttonText: {
-    color: "#fff",
+    color: "#ffffff",
     fontSize: 16,
     fontWeight: "700",
+    letterSpacing: 0.3,
   },
 
   footer: {
     flexDirection: "row",
     justifyContent: "center",
-    gap: 4,
-    marginTop: 24,
+    gap: 6,
+    marginTop: 28,
   },
 
   footerText: {
-    color: "#6b7280",
+    color: "#55557a",
     fontSize: 14,
   },
 
   footerLink: {
     color: "#9b4d75",
     fontSize: 14,
-    fontWeight: "600",
+    fontWeight: "700",
   },
 });

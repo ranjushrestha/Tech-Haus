@@ -1,8 +1,10 @@
 import {
   ActivityIndicator,
   FlatList,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
   Pressable,
-  RefreshControl,
   StyleSheet,
   Text,
   TextInput,
@@ -82,6 +84,7 @@ const Index = () => {
         type: "error",
         text1: "Failed to delete note",
         text2: result.error,
+        visibilityTime: 1500,
       });
       setDeleting(false);
       return;
@@ -94,6 +97,7 @@ const Index = () => {
     Toast.show({
       type: "success",
       text1: "Note deleted",
+      visibilityTime: 1500,
     });
   };
 
@@ -135,14 +139,10 @@ const Index = () => {
           />
 
           <Pressable
-            style={{
-              backgroundColor: "#f5b0b0",
-              padding: 6,
-              borderRadius: "50%",
-            }}
+            style={styles.deleteIconButton}
             onPress={() => setDeletingNote(item)}
           >
-            <Ionicons name="trash-outline" size={22} color="#ec4545" />
+            <Ionicons name="trash-outline" size={20} color="#9b4270" />
           </Pressable>
         </View>
       </Pressable>
@@ -180,66 +180,66 @@ const Index = () => {
         </View>
 
         <Pressable style={styles.signOutButton} onPress={handleSignOut}>
-          <Text style={styles.signOutText}>Sign Out</Text>
+          <Ionicons name="log-out-outline" size={16} color="#ffffff" />
         </Pressable>
       </View>
-      <View
-        style={{
-          flexDirection: "row",
-          alignItems: "center",
-          paddingHorizontal: 8,
-          borderWidth: 1,
-          borderRadius: 20,
-          marginBottom: 8,
-        }}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={{ flex: 1 }}
       >
-        <Ionicons name="search" size={18} />
-        <TextInput
-          style={{ flex: 1 }}
-          placeholder="Search notes"
-          value={searchTerm}
-          onChangeText={setSearchTerm}
-        />
-        <Pressable onPress={() => setSearchTerm("")}>
-          <Ionicons name="close" size={18} />
-        </Pressable>
-      </View>
-
-      {filteredNotes.length > 0 && (
-        <View style={styles.countBadge}>
-          <Text style={styles.countText}>
-            {filteredNotes.length}{" "}
-            {filteredNotes.length === 1 ? "note" : "notes"}
-          </Text>
+        <View style={styles.searchBar}>
+          <Ionicons name="search" size={18} color="#9b4d75" />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search notes"
+            placeholderTextColor="#999"
+            value={searchTerm}
+            onChangeText={setSearchTerm}
+          />
+          {searchTerm.length > 0 && (
+            <Pressable onPress={() => setSearchTerm("")}>
+              <Ionicons name="close" size={20} color="#9b4d75" />
+            </Pressable>
+          )}
         </View>
-      )}
 
-      <FlatList
-        data={filteredNotes}
-        keyExtractor={(item) => item.id}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={[
-          styles.listContent,
-          notes.length === 0 && styles.emptyListContent,
-        ]}
-        ListEmptyComponent={
-          notes.length === 0 ? (
-            <EmptyState
-              emptyTitle="No notes yet!"
-              emptyText="Create your note"
-            />
-          ) : (
-            <EmptyState emptyTitle="" emptyText="no recent notes" />
-          )
-        }
-        renderItem={renderItem}
-      />
+        {filteredNotes.length > 0 && (
+          <View style={styles.countBadge}>
+            <Text style={styles.countText}>
+              {filteredNotes.length}{" "}
+              {filteredNotes.length === 1 ? "note" : "notes"}
+            </Text>
+          </View>
+        )}
 
+        <FlatList
+          data={filteredNotes}
+          keyExtractor={(item) => item.id}
+          showsVerticalScrollIndicator={false}
+          onScrollBeginDrag={() => Keyboard.dismiss()}
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={[
+            styles.listContent,
+            notes.length === 0 && styles.emptyListContent,
+          ]}
+          ListEmptyComponent={
+            notes.length === 0 ? (
+              <EmptyState
+                emptyTitle="No notes yet!"
+                emptyText="Create your note"
+              />
+            ) : (
+              <EmptyState emptyTitle="" emptyText="no recent notes" />
+            )
+          }
+          renderItem={renderItem}
+        />
+      </KeyboardAvoidingView>
       <Pressable
         style={styles.createButton}
         onPress={() => router.push("/create")}
       >
-        <Ionicons name="add" size={22} color="white" />
+        <Ionicons name="add" size={28} color="white" />
       </Pressable>
     </View>
   );
@@ -250,7 +250,7 @@ export default Index;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f3dbdb",
+    backgroundColor: "#050508",
     paddingHorizontal: 16,
   },
 
@@ -258,13 +258,13 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#f3dbdb",
+    backgroundColor: "#050508",
     paddingHorizontal: 20,
   },
 
   loadingText: {
-    color: "#9b4d75",
-    fontSize: 20,
+    color: "#ccccdd",
+    fontSize: 16,
     fontWeight: "600",
     marginTop: 12,
     textAlign: "center",
@@ -273,9 +273,9 @@ const styles = StyleSheet.create({
   retryButton: {
     marginTop: 16,
     backgroundColor: "#9b4d75",
-    paddingHorizontal: 18,
-    paddingVertical: 10,
-    borderRadius: 999,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 12,
   },
 
   retryText: {
@@ -288,7 +288,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     paddingVertical: 12,
-    marginBottom: 2,
+    marginBottom: 8,
   },
 
   headerLeft: {
@@ -298,17 +298,37 @@ const styles = StyleSheet.create({
   },
 
   heading: {
-    fontSize: 32,
-    fontWeight: "700",
-    color: "#9b4d75",
-    letterSpacing: -0.3,
+    fontSize: 28,
+    fontWeight: "800",
+    color: "#ffffff",
+    letterSpacing: -0.5,
+  },
+
+  searchBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 14,
+    height: 44,
+    backgroundColor: "#12121e",
+    borderWidth: 1,
+    borderColor: "#2a2a44",
+    borderRadius: 12,
+    marginBottom: 12,
+    gap: 10,
+  },
+
+  searchInput: {
+    flex: 1,
+    fontSize: 15,
+    color: "#ffffff",
+    paddingVertical: 0,
   },
 
   countBadge: {
     marginBottom: 12,
-    backgroundColor: "#efbcbf",
-    paddingVertical: 3,
-    paddingHorizontal: 6,
+    backgroundColor: "#1a1a2e",
+    paddingVertical: 4,
+    paddingHorizontal: 10,
     alignSelf: "flex-start",
     borderRadius: 999,
   },
@@ -316,8 +336,7 @@ const styles = StyleSheet.create({
   countText: {
     fontSize: 13,
     fontWeight: "600",
-    color: "#9b4d75",
-    textAlign: "center",
+    color: "#8888bb",
   },
 
   listContent: {
@@ -330,13 +349,13 @@ const styles = StyleSheet.create({
   },
 
   card: {
-    borderRadius: 20,
-    backgroundColor: "#fef1f1",
+    borderRadius: 16,
+    backgroundColor: "#0a0a12",
     padding: 16,
     marginBottom: 12,
-    borderTopWidth: 0.4,
-    borderRightWidth: 0.4,
-    borderColor: "#9b6882",
+    borderTopWidth: 0.8,
+    borderRightWidth: 0.8,
+    borderColor: "#9b4d75",
   },
 
   cardContent: {
@@ -346,43 +365,45 @@ const styles = StyleSheet.create({
     gap: 14,
   },
 
-  deleteButton: {
+  deleteIconButton: {
     width: 36,
     height: 36,
     borderRadius: 18,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#fdf0f0",
+    backgroundColor: "#2d1122",
   },
 
   createButton: {
     position: "absolute",
     right: "46%",
-    bottom: 12,
+    bottom: 24,
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: "#9b4d75",
-    padding: 16,
-    borderRadius: 999,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
     shadowColor: "#9b4d75",
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.6,
-    shadowRadius: 12,
-    elevation: 6,
+    shadowRadius: 16,
+    elevation: 8,
   },
 
   signOutButton: {
-    flexDirection: "row",
     alignItems: "center",
     gap: 6,
-    backgroundColor: "#9b4d75",
-    paddingHorizontal: 12,
-    paddingVertical: 10,
+    backgroundColor: "#12121e",
+    borderWidth: 1,
+    borderColor: "#9b4d75",
+    paddingHorizontal: 10,
+    paddingVertical: 8,
     borderRadius: 999,
   },
 
   signOutText: {
-    color: "#fff",
+    color: "#ccccdd",
     fontWeight: "600",
     fontSize: 13,
   },

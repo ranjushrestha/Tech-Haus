@@ -26,6 +26,7 @@ const NoteBox = ({ item }: { item: Note }) => {
             ? new Date(item.created_at).toLocaleDateString("en-US", {
                 month: "short",
                 day: "numeric",
+                year: "numeric",
               })
             : ""}
         </Text>
@@ -40,9 +41,11 @@ const styles = StyleSheet.create({
   noteBox: {
     flex: 1,
     flexDirection: "row",
+    alignItems: "center",
   },
   accentBar: {
-    width: 3,
+    width: 4,
+    height: 40,
     borderRadius: 2,
     backgroundColor: "#9b4d75",
     marginRight: 14,
@@ -51,21 +54,23 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   title: {
-    fontSize: 17,
+    fontSize: 16,
     fontWeight: "700",
-    color: "#000",
+    color: "#ffffff",
     letterSpacing: -0.2,
+    marginBottom: 2,
   },
   preview: {
-    marginTop: 4,
     fontSize: 13,
     lineHeight: 18,
-    color: "#6b7280",
+    color: "#999",
   },
   date: {
     marginTop: 6,
-    fontSize: 12,
-    color: "#4a5568",
+    fontSize: 11,
+    color: "#4f4f63",
     fontWeight: "500",
+    textTransform: "uppercase",
+    letterSpacing: 0.3,
   },
 });

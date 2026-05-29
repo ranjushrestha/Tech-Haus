@@ -122,6 +122,7 @@ const CreateNote = () => {
           type: "error",
           text1: "Save failed",
           text2: error.message,
+          visibilityTime: 1500,
         });
         return;
       }
@@ -136,7 +137,7 @@ const CreateNote = () => {
         type: "success",
         text1: "Note saved successfully",
         position: "top",
-        visibilityTime: 1000,
+        visibilityTime: 1500,
       });
 
       router.dismissTo("/list");
@@ -146,6 +147,7 @@ const CreateNote = () => {
         type: "error",
         text1: "Something went wrong",
         text2: "Please try again.",
+        visibilityTime: 15000,
       });
     } finally {
       setSaving(false);
@@ -161,11 +163,11 @@ const CreateNote = () => {
 
         <Text style={styles.heading}>Create Note</Text>
 
-        <Pressable style={styles.iconButton} onPress={handleAdd}>
+        <Pressable style={styles.saveButton} onPress={handleAdd}>
           {saving ? (
-            <ActivityIndicator size="small" color="#9b4d75" />
+            <ActivityIndicator size="small" color="#ffffff" />
           ) : (
-            <Ionicons name="checkmark-circle" size={22} color="#9b4d75" />
+            <Ionicons name="checkmark" size={22} color="#ffffff" />
           )}
         </Pressable>
       </View>
@@ -174,29 +176,34 @@ const CreateNote = () => {
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={styles.keyboardContainer}
       >
-        <View style={styles.card}>
-          <TextInput
-            placeholder="Title"
-            value={title}
-            onChangeText={setTitle}
-            style={styles.titleInput}
-            placeholderTextColor="#9b4d7580"
-          />
+        <View style={styles.formArea}>
+          <View style={styles.titleSection}>
+            <TextInput
+              placeholder="Title"
+              value={title}
+              onChangeText={setTitle}
+              style={styles.titleInput}
+              placeholderTextColor="#3a3a5c"
+            />
+          </View>
 
-          <ScrollView showsVerticalScrollIndicator={false}>
-            <View style={styles.imageContainer}>
-              <Pressable style={styles.imagePicker} onPress={pickImage}>
-                {image ? (
-                  <Image source={{ uri: image }} style={styles.image} />
-                ) : (
-                  <View style={styles.imagePlaceholder}>
-                    <Ionicons name="image-outline" size={22} color="#9b4d75" />
-                    <Text style={styles.imageText}>Add an image</Text>
-                  </View>
-                )}
-              </Pressable>
-            </View>
+          <View style={styles.imageContainer}>
+            <Pressable style={styles.imagePicker} onPress={pickImage}>
+              {image ? (
+                <Image source={{ uri: image }} style={styles.image} />
+              ) : (
+                <View style={styles.imagePlaceholder}>
+                  <Ionicons name="image-outline" size={28} color="#55557a" />
+                  <Text style={styles.imageText}>Add image</Text>
+                </View>
+              )}
+            </Pressable>
+          </View>
 
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            style={styles.contentScroll}
+          >
             <TextInput
               placeholder="Write a note..."
               value={content}
@@ -204,7 +211,7 @@ const CreateNote = () => {
               multiline
               textAlignVertical="top"
               style={styles.contentInput}
-              placeholderTextColor="#9b4d7580"
+              placeholderTextColor="#3a3a5c"
             />
           </ScrollView>
         </View>
@@ -218,44 +225,67 @@ export default CreateNote;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f3dbdb",
-    paddingHorizontal: 8,
-    padding: "2%",
+    backgroundColor: "#050508",
+    paddingHorizontal: 14,
   },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 4,
+    paddingTop: 8,
+    paddingBottom: 20,
   },
   keyboardContainer: {
     flex: 1,
   },
-  card: {
+  formArea: {
     flex: 1,
-    borderWidth: 2,
+    backgroundColor: "#0a0a12",
     borderRadius: 20,
+    padding: 20,
+    marginBottom: 16,
+    borderWidth: 1,
     borderColor: "#9b4d75",
-    padding: 12,
-    marginTop: 8,
   },
   heading: {
-    fontSize: 26,
-    fontWeight: "bold",
-    color: "#9b4d75",
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#ffffff",
+    letterSpacing: -0.3,
   },
   iconButton: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
+    width: 40,
+    height: 40,
+    borderRadius: 12,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#edcece",
+    backgroundColor: "#12121e",
+    borderWidth: 1,
+    borderColor: "#2a2a44",
+  },
+  saveButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#9b4d75",
+  },
+  titleSection: {
+    borderBottomWidth: 1,
+    borderBottomColor: "#2a2a44",
+    marginBottom: 20,
+    paddingBottom: 4,
+  },
+  titleInput: {
+    fontSize: 24,
+    fontWeight: "700",
+    color: "#ffffff",
+    paddingVertical: 8,
+    letterSpacing: -0.3,
   },
   imageContainer: {
-    overflow: "hidden",
-    marginTop: 8,
-    marginBottom: 16,
+    marginBottom: 20,
   },
   imagePicker: {
     width: "100%",
@@ -265,40 +295,35 @@ const styles = StyleSheet.create({
   image: {
     width: "100%",
     height: 180,
-    borderRadius: 20,
+    borderRadius: 16,
   },
   imagePlaceholder: {
     width: "100%",
-    height: 120,
+    height: 100,
     justifyContent: "center",
     alignItems: "center",
-    gap: 6,
-    borderRadius: 14,
-    borderWidth: 2,
+    gap: 8,
+    borderRadius: 16,
+    borderWidth: 1,
     borderColor: "#9b4d75",
-    borderStyle: "dotted",
-    backgroundColor: "#edcece",
+    borderStyle: "dashed",
+    backgroundColor: "#12121e",
   },
   imageText: {
-    color: "#9b4d75",
-    fontSize: 13,
+    color: "#55557a",
+    fontSize: 14,
     fontWeight: "500",
   },
-  titleInput: {
-    borderBottomWidth: 2,
-    borderColor: "#9b4d75",
-    marginBottom: 18,
-    paddingBottom: 6,
-    fontSize: 20,
-    fontWeight: "600",
-    color: "#3a2a31",
+  contentScroll: {
+    flex: 1,
   },
   contentInput: {
     flex: 1,
     fontSize: 16,
+    lineHeight: 24,
     textAlignVertical: "top",
-    marginBottom: 20,
-    minHeight: 220,
-    color: "#3a2a31",
+    color: "#ccccdd",
+    paddingTop: 0,
+    minHeight: 200,
   },
 });
