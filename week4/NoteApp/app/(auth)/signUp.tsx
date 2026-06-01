@@ -75,7 +75,18 @@ const signUp = () => {
       }
 
       if (!data.user.confirmed_at) {
-        setSignUpError("Already registered. Confirm your email");
+        Toast.show({
+          type: "success",
+          text1: "Check your email for the verification code",
+          position: "top",
+          visibilityTime: 2000,
+        });
+
+        reset();
+        router.replace({
+          pathname: "/verifyScreen",
+          params: { emailAddress: formData.email },
+        });
         return;
       }
 
@@ -87,10 +98,7 @@ const signUp = () => {
       });
 
       reset();
-      router.navigate({
-        pathname: "/verifyScreen",
-        params: { emailAddress: formData.email },
-      });
+      router.replace("/signIn");
     } catch (err) {
       console.log("CATCH ERROR:", err);
       setSignUpError("Something went wrong. Please try again.");
