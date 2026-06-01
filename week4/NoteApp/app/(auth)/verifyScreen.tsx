@@ -6,13 +6,14 @@ import Toast from "react-native-toast-message";
 
 const verifyScreen = () => {
   const { emailAdress } = useLocalSearchParams();
+  //params can be string or array of strings
   const email = Array.isArray(emailAdress)
     ? emailAdress[0]
     : (emailAdress ?? "");
   const [token, setToken] = useState("");
 
   const handleVerification = async () => {
-    const { error } = await supabase.auth.verifyOtp({
+    const { data, error } = await supabase.auth.verifyOtp({
       email,
       token,
       type: "signup",
@@ -31,11 +32,19 @@ const verifyScreen = () => {
     router.replace("/signIn");
   };
 
+  //   const handleResend = () => {
+  //resend function
+  //     Toast.show({
+  //       type: "info",
+  //       text1: "Passcode resent. Please check your email",
+  //     });
+  //   };
+
   return (
     <View>
       <Text>Create your account</Text>
       <Text>We've sent you a passcode</Text>
-      <Text>Please check your inbox at ${emailAdress}</Text>
+      <Text>Please check your inbox at {email}</Text>
 
       <TextInput
         placeholder="000000"
@@ -45,6 +54,8 @@ const verifyScreen = () => {
         maxLength={6}
         style={{
           borderWidth: 1,
+          borderColor: "#fff",
+          color: "#fff",
           padding: 10,
           textAlign: "center",
           fontSize: 18,
@@ -54,9 +65,9 @@ const verifyScreen = () => {
       <Pressable onPress={handleVerification}>
         <Text>Verify</Text>
       </Pressable>
-      <Pressable onPress={handleVerification}>
+      {/* <Pressable onPress={handleResend}>
         <Text>Resend</Text>
-      </Pressable>
+      </Pressable> */}
     </View>
   );
 };

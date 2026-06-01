@@ -3,6 +3,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -103,178 +104,180 @@ const signUp = () => {
         style={styles.keyboardView}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
-        <View style={styles.brandSection}>
-          <View style={styles.logoCircle}>
-            <Ionicons name="document-text" size={28} color="#9b4d75" />
-          </View>
-          <Text style={styles.brandName}>NoteApp</Text>
-          <Text style={styles.brandTagline}>Create your account</Text>
-        </View>
-
-        <View style={styles.card}>
-          <Text style={styles.title}>Get started</Text>
-
-          {signUpError && (
-            <View style={styles.errorBox}>
-              <Ionicons
-                name="alert-circle"
-                size={16}
-                color="#ff3b5c"
-                style={{ marginRight: 6 }}
-              />
-              <Text style={styles.errorText}>{signUpError}</Text>
+        <ScrollView style={{ flex: 1, marginBottom: 20 }}>
+          <View style={styles.brandSection}>
+            <View style={styles.logoCircle}>
+              <Ionicons name="document-text" size={28} color="#9b4d75" />
             </View>
-          )}
+            <Text style={styles.brandName}>NoteApp</Text>
+            <Text style={styles.brandTagline}>Create your account</Text>
+          </View>
 
-          <View style={styles.form}>
-            <Controller
-              control={control}
-              name="email"
-              rules={{
-                required: "Email is required",
-                pattern: {
-                  value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                  message: "Enter a valid email",
-                },
-              }}
-              render={({ field: { onChange, value } }) => (
-                <View>
-                  <Text style={styles.fieldLabel}>Email</Text>
-                  <TextInput
-                    style={[styles.input, errors.email && styles.inputError]}
-                    placeholder="Enter email"
-                    placeholderTextColor="#55557a"
-                    value={value}
-                    onChangeText={(text) => {
-                      setSignUpError("");
-                      onChange(text);
-                    }}
-                    keyboardType="email-address"
-                  />
-                  {errors.email && (
-                    <Text style={styles.fieldError}>
-                      {errors.email.message}
-                    </Text>
-                  )}
-                </View>
-              )}
-            />
+          <View style={styles.card}>
+            <Text style={styles.title}>Get started</Text>
 
-            <Controller
-              control={control}
-              name="password"
-              rules={{
-                required: "Password is required",
-                minLength: {
-                  value: 6,
-                  message: "Minimum 6 characters",
-                },
-              }}
-              render={({ field: { onChange, value } }) => (
-                <View>
-                  <Text style={styles.fieldLabel}>Password</Text>
-                  <View
-                    style={[
-                      styles.passwordContainer,
-                      errors.password && styles.inputError,
-                    ]}
-                  >
+            {signUpError && (
+              <View style={styles.errorBox}>
+                <Ionicons
+                  name="alert-circle"
+                  size={16}
+                  color="#ff3b5c"
+                  style={{ marginRight: 6 }}
+                />
+                <Text style={styles.errorText}>{signUpError}</Text>
+              </View>
+            )}
+
+            <View style={styles.form}>
+              <Controller
+                control={control}
+                name="email"
+                rules={{
+                  required: "Email is required",
+                  pattern: {
+                    value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                    message: "Enter a valid email",
+                  },
+                }}
+                render={({ field: { onChange, value } }) => (
+                  <View>
+                    <Text style={styles.fieldLabel}>Email</Text>
                     <TextInput
-                      placeholder="Enter password"
+                      style={[styles.input, errors.email && styles.inputError]}
+                      placeholder="Enter email"
                       placeholderTextColor="#55557a"
-                      secureTextEntry={!showPassword}
                       value={value}
                       onChangeText={(text) => {
                         setSignUpError("");
                         onChange(text);
                       }}
-                      style={styles.passwordInput}
+                      keyboardType="email-address"
                     />
-
-                    <Pressable
-                      style={styles.eyeContainer}
-                      onPress={() => setShowPassword((prev) => !prev)}
-                    >
-                      <Ionicons
-                        name={showPassword ? "eye-off" : "eye"}
-                        size={18}
-                        color="#8888bb"
-                      />
-                    </Pressable>
+                    {errors.email && (
+                      <Text style={styles.fieldError}>
+                        {errors.email.message}
+                      </Text>
+                    )}
                   </View>
-                  {errors.password && (
-                    <Text style={styles.fieldError}>
-                      {errors.password.message}
-                    </Text>
-                  )}
-                </View>
-              )}
-            />
+                )}
+              />
 
-            <Controller
-              control={control}
-              name="confirmPassword"
-              rules={{
-                required: "Confirm password is required",
-                validate: (value) =>
-                  value === watch("password") || "Passwords do not match",
-              }}
-              render={({ field: { value, onChange } }) => (
-                <View>
-                  <Text style={styles.fieldLabel}>Confirm Password</Text>
-                  <View
-                    style={[
-                      styles.passwordContainer,
-                      errors.confirmPassword && styles.inputError,
-                    ]}
-                  >
-                    <TextInput
-                      placeholder="Confirm password"
-                      placeholderTextColor="#55557a"
-                      secureTextEntry={!showConfirmPassword}
-                      value={value}
-                      onChangeText={(text) => {
-                        setSignUpError("");
-                        onChange(text);
-                      }}
-                      style={styles.passwordInput}
-                    />
-                    <Pressable
-                      style={styles.eyeContainer}
-                      onPress={() => setShowConfirmPassword((prev) => !prev)}
+              <Controller
+                control={control}
+                name="password"
+                rules={{
+                  required: "Password is required",
+                  minLength: {
+                    value: 6,
+                    message: "Minimum 6 characters",
+                  },
+                }}
+                render={({ field: { onChange, value } }) => (
+                  <View>
+                    <Text style={styles.fieldLabel}>Password</Text>
+                    <View
+                      style={[
+                        styles.passwordContainer,
+                        errors.password && styles.inputError,
+                      ]}
                     >
-                      <Ionicons
-                        name={showConfirmPassword ? "eye-off" : "eye"}
-                        size={18}
-                        color="#8888bb"
+                      <TextInput
+                        placeholder="Enter password"
+                        placeholderTextColor="#55557a"
+                        secureTextEntry={!showPassword}
+                        value={value}
+                        onChangeText={(text) => {
+                          setSignUpError("");
+                          onChange(text);
+                        }}
+                        style={styles.passwordInput}
                       />
-                    </Pressable>
+
+                      <Pressable
+                        style={styles.eyeContainer}
+                        onPress={() => setShowPassword((prev) => !prev)}
+                      >
+                        <Ionicons
+                          name={showPassword ? "eye-off" : "eye"}
+                          size={18}
+                          color="#8888bb"
+                        />
+                      </Pressable>
+                    </View>
+                    {errors.password && (
+                      <Text style={styles.fieldError}>
+                        {errors.password.message}
+                      </Text>
+                    )}
                   </View>
-                  {errors.confirmPassword && (
-                    <Text style={styles.fieldError}>
-                      {errors.confirmPassword.message}
-                    </Text>
-                  )}
-                </View>
-              )}
-            />
+                )}
+              />
 
-            <Pressable style={styles.button} onPress={handleSubmit(onSubmit)}>
-              {loading ? (
-                <ActivityIndicator color="white" />
-              ) : (
-                <Text style={styles.buttonText}>Create Account</Text>
-              )}
-            </Pressable>
-          </View>
+              <Controller
+                control={control}
+                name="confirmPassword"
+                rules={{
+                  required: "Confirm password is required",
+                  validate: (value) =>
+                    value === watch("password") || "Passwords do not match",
+                }}
+                render={({ field: { value, onChange } }) => (
+                  <View>
+                    <Text style={styles.fieldLabel}>Confirm Password</Text>
+                    <View
+                      style={[
+                        styles.passwordContainer,
+                        errors.confirmPassword && styles.inputError,
+                      ]}
+                    >
+                      <TextInput
+                        placeholder="Confirm password"
+                        placeholderTextColor="#55557a"
+                        secureTextEntry={!showConfirmPassword}
+                        value={value}
+                        onChangeText={(text) => {
+                          setSignUpError("");
+                          onChange(text);
+                        }}
+                        style={styles.passwordInput}
+                      />
+                      <Pressable
+                        style={styles.eyeContainer}
+                        onPress={() => setShowConfirmPassword((prev) => !prev)}
+                      >
+                        <Ionicons
+                          name={showConfirmPassword ? "eye-off" : "eye"}
+                          size={18}
+                          color="#8888bb"
+                        />
+                      </Pressable>
+                    </View>
+                    {errors.confirmPassword && (
+                      <Text style={styles.fieldError}>
+                        {errors.confirmPassword.message}
+                      </Text>
+                    )}
+                  </View>
+                )}
+              />
 
-          <View style={styles.footer}>
-            <Text style={styles.footerText}>Already have an account?</Text>
-            <Pressable onPress={() => router.dismissTo("/signIn")}>
-              <Text style={styles.footerLink}>Sign In</Text>
-            </Pressable>
+              <Pressable style={styles.button} onPress={handleSubmit(onSubmit)}>
+                {loading ? (
+                  <ActivityIndicator color="white" />
+                ) : (
+                  <Text style={styles.buttonText}>Create Account</Text>
+                )}
+              </Pressable>
+            </View>
+
+            <View style={styles.footer}>
+              <Text style={styles.footerText}>Already have an account?</Text>
+              <Pressable onPress={() => router.dismissTo("/signIn")}>
+                <Text style={styles.footerLink}>Sign In</Text>
+              </Pressable>
+            </View>
           </View>
-        </View>
+        </ScrollView>
       </KeyboardAvoidingView>
     </View>
   );
