@@ -74,6 +74,7 @@ const Index = () => {
     }, [fetchNotes]),
   );
 
+  //refresh on pull
   const onRefresh = useCallback(() => {
     setRefreshing(true);
     setTimeout(() => {
@@ -86,29 +87,29 @@ const Index = () => {
     note.title.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
-  const getPathFromUrl = (url: string | null) => {
-    if (!url) return null;
+  // const getPathFromUrl = (url: string | null) => {
+  //   if (!url) return null;
 
-    const path = url.split("/note-images/");
-    return path.length > 1 ? path[1] : null;
-  };
+  //   const path = url.split("/note-images/");
+  //   return path.length > 1 ? path[1] : null;
+  // };
 
   // Delete note and its image from storage
   const handleDelete = async (item: Note) => {
     setDeleting(true);
 
-    const oldPath = getPathFromUrl(item.image_url || null);
-    if (oldPath) {
-      const { error: deleteError } = await supabase.storage
-        .from("note-images")
-        .remove([oldPath]);
+    // const oldPath = getPathFromUrl(item.image_url || null);
+    // if (oldPath) {
+    //   const { error: deleteError } = await supabase.storage
+    //     .from("note-images")
+    //     .remove([oldPath]);
 
-      if (deleteError) {
-        console.log("Error deleting image in note list:", deleteError.message);
-      }
-    }
+    //   if (deleteError) {
+    //     console.log("Error deleting image in note list:", deleteError.message);
+    //   }
+    // }
 
-    const result = await deleteNote(item.id);
+    const result = await deleteNote(item.id, item.image_url);
 
     if (!result.success) {
       Toast.show({
@@ -247,6 +248,7 @@ const Index = () => {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={onRefresh}
+              colors={["#9b4d75"]} //andriod
               tintColor="#9b4d75"
             />
           }

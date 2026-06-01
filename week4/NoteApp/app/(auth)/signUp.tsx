@@ -86,6 +86,10 @@ const signUp = () => {
       });
 
       reset();
+      router.navigate({
+        pathname: "/verifyScreen",
+        params: { emailAdress: formData.email },
+      });
     } catch (err) {
       console.log("CATCH ERROR:", err);
       setSignUpError("Something went wrong. Please try again.");

@@ -66,26 +66,24 @@ const CreateNote = () => {
         encoding: "base64",
       });
 
-      // // Convert base64 string → raw binary bytes (ArrayBuffer)
-      // // This is required because FormData/Blob don't work properly in React Native
-      // const binaryStr = atob(base64);
-      // const bytes = new Uint8Array(binaryStr.length);
-      // for (let i = 0; i < binaryStr.length; i++) {
-      //   bytes[i] = binaryStr.charCodeAt(i);
-      // }
+      // This is required because FormData/Blob don't work properly in React Native
+      // atob converts base64 to binary string eg: SGVsbG8gV29ybGQ to "Hello World" single byte
+      // then charCodeAt converts return integer from Unicode code 8 bit then
+      //into a raw Uint8Array byte array
+      const binaryStr = atob(base64);
+      const bytes = new Uint8Array(binaryStr.length);
+      for (let i = 0; i < binaryStr.length; i++) {
+        bytes[i] = binaryStr.charCodeAt(i);
+      }
 
-      // // File path inside the bucket: userId/timestamp.jpg
-      // const filePath = `${userId}/${Date.now()}.jpg`;
-
-      const bytes = Uint8Array.from(atob(base64), (char) => char.charCodeAt(0));
-      const extension = imageUri.split(".").pop() || "jpg";
-      const filePath = `${userId}/${Date.now()}.${extension}`;
+      // File path inside the bucket: userId/timestamp.jpg
+      const filePath = `${userId}/${Date.now()}.jpg`;
 
       const { data, error } = await supabase.storage
         .from("note-images")
         .upload(filePath, bytes.buffer, {
-          contentType: `image/${extension}`,
-          upsert: false,
+          contentType: `image/jpg`,
+          upsert: false, //if filePath already exist do not overwrite
         });
 
       if (error) {

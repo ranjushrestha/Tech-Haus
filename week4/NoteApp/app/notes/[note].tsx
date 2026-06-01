@@ -97,18 +97,19 @@ export default function NoteDetail() {
   const handleDelete = async (id: string) => {
     setDeleting(true);
 
-    const oldPath = getPathFromUrl(imageUrl);
-    if (oldPath) {
-      const { error: deleteError } = await supabase.storage
-        .from("note-images")
-        .remove([oldPath]);
+    // const oldPath = getPathFromUrl(imageUrl);
+    // if (oldPath) {
+    //   const { error: deleteError } = await supabase.storage
+    //     .from("note-images")
+    //     .remove([oldPath]);
 
-      if (deleteError) {
-        console.log("Error deleting image:", deleteError.message);
-      }
-    }
+    //   if (deleteError) {
+    //     console.log("Error deleting image:", deleteError.message);
+    //   }
+    // }
 
-    const result = await deleteNote(id);
+    // delete note and image from deleteNote
+    const result = await deleteNote(id, imageUrl);
 
     if (!result.success) {
       Toast.show({
@@ -125,6 +126,7 @@ export default function NoteDetail() {
     });
   };
 
+  //Image picker function
   const pickNewImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
@@ -148,7 +150,7 @@ export default function NoteDetail() {
     }
   };
 
-  //get file path
+  //get file path helper function
   const getPathFromUrl = (url: string | null) => {
     if (!url) return null;
 
@@ -178,26 +180,19 @@ export default function NoteDetail() {
         encoding: "base64", //
       });
 
-      // const binaryStr = atob(base64);
-      // const bytes = new Uint8Array(binaryStr.length);
-      // for (let i = 0; i < binaryStr.length; i++) {
-      //   bytes[i] = binaryStr.charCodeAt(i);
-      // }
-
-      // const filePath = `edit/${Date.now()}.jpg`;
-
       // Decodes a Base64 string into a raw Uint8Array byte array
-      const bytes = Uint8Array.from(atob(base64), (char) => char.charCodeAt(0));
+      const binaryStr = atob(base64);
+      const bytes = new Uint8Array(binaryStr.length);
+      for (let i = 0; i < binaryStr.length; i++) {
+        bytes[i] = binaryStr.charCodeAt(i);
+      }
 
-      // Extracts the file type (like 'png') or defaults to 'jpg'
-      const extension = imageUri.split(".").pop() || "jpg";
-
-      const filePath = `edit/${Date.now()}.${extension}`;
+      const filePath = `edit/${Date.now()}.jpg`;
 
       const { data, error } = await supabase.storage
         .from("note-images")
         .upload(filePath, bytes.buffer, {
-          contentType: `image/${extension}`,
+          contentType: `image/jpg`,
           upsert: false,
         });
 
@@ -384,13 +379,6 @@ export default function NoteDetail() {
               style={styles.editContentInput}
               placeholderTextColor="#3a3a5a"
             />
-
-            <View style={styles.editFooter}>
-              <View style={styles.editFooterDot} />
-              <Text style={styles.editFooterText}>
-                {editContent.length} characters
-              </Text>
-            </View>
           </ScrollView>
         ) : (
           <ScrollView
