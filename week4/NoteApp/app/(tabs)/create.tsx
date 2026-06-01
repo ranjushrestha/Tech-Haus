@@ -66,21 +66,25 @@ const CreateNote = () => {
         encoding: "base64",
       });
 
-      // Convert base64 string → raw binary bytes (ArrayBuffer)
-      // This is required because FormData/Blob don't work properly in React Native
-      const binaryStr = atob(base64);
-      const bytes = new Uint8Array(binaryStr.length);
-      for (let i = 0; i < binaryStr.length; i++) {
-        bytes[i] = binaryStr.charCodeAt(i);
-      }
+      // // Convert base64 string → raw binary bytes (ArrayBuffer)
+      // // This is required because FormData/Blob don't work properly in React Native
+      // const binaryStr = atob(base64);
+      // const bytes = new Uint8Array(binaryStr.length);
+      // for (let i = 0; i < binaryStr.length; i++) {
+      //   bytes[i] = binaryStr.charCodeAt(i);
+      // }
 
-      // File path inside the bucket: userId/timestamp.jpg
-      const filePath = `${userId}/${Date.now()}.jpg`;
+      // // File path inside the bucket: userId/timestamp.jpg
+      // const filePath = `${userId}/${Date.now()}.jpg`;
+
+      const bytes = Uint8Array.from(atob(base64), (char) => char.charCodeAt(0));
+      const extension = imageUri.split(".").pop() || "jpg";
+      const filePath = `${userId}/${Date.now()}.${extension}`;
 
       const { data, error } = await supabase.storage
         .from("note-images")
         .upload(filePath, bytes.buffer, {
-          contentType: "image/jpeg",
+          contentType: `image/${extension}`,
           upsert: false,
         });
 
@@ -201,36 +205,34 @@ const CreateNote = () => {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          <View style={styles.card}>
-            <TextInput
-              placeholder="Note title"
-              value={title}
-              onChangeText={setTitle}
-              style={styles.titleInput}
-              placeholderTextColor="#55557a"
-            />
+          <TextInput
+            placeholder="Note title"
+            value={title}
+            onChangeText={setTitle}
+            style={styles.titleInput}
+            placeholderTextColor="#55557a"
+          />
 
-            <Pressable style={styles.imagePicker} onPress={pickImage}>
-              {image ? (
-                <Image source={{ uri: image }} style={styles.image} />
-              ) : (
-                <View style={styles.imagePlaceholder}>
-                  <Ionicons name="image-outline" size={20} color="#55557a" />
-                  <Text style={styles.imageText}>Add photo</Text>
-                </View>
-              )}
-            </Pressable>
+          <Pressable style={styles.imagePicker} onPress={pickImage}>
+            {image ? (
+              <Image source={{ uri: image }} style={styles.image} />
+            ) : (
+              <View style={styles.imagePlaceholder}>
+                <Ionicons name="image-outline" size={20} color="#55557a" />
+                <Text style={styles.imageText}>Add photo</Text>
+              </View>
+            )}
+          </Pressable>
 
-            <TextInput
-              placeholder="Start writing..."
-              value={content}
-              onChangeText={setContent}
-              multiline
-              textAlignVertical="top"
-              style={styles.contentInput}
-              placeholderTextColor="#55557a"
-            />
-          </View>
+          <TextInput
+            placeholder="Start writing..."
+            value={content}
+            onChangeText={setContent}
+            multiline
+            textAlignVertical="top"
+            style={styles.contentInput}
+            placeholderTextColor="#55557a"
+          />
         </ScrollView>
       </KeyboardAvoidingView>
     </View>
@@ -260,15 +262,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    padding: 20,
+    paddingHorizontal: 20,
+    paddingTop: 24,
     paddingBottom: 40,
-  },
-  card: {
-    borderWidth: 1,
-    borderRadius: 16,
-    borderColor: "#1a1a2e",
-    backgroundColor: "#0a0a12",
-    padding: 20,
   },
   heading: {
     fontSize: 18,
@@ -292,24 +288,24 @@ const styles = StyleSheet.create({
   },
   imagePicker: {
     width: "100%",
-    marginBottom: 16,
+    marginBottom: 20,
   },
   image: {
     width: "100%",
-    height: 180,
+    height: 200,
     borderRadius: 12,
   },
   imagePlaceholder: {
     width: "100%",
-    height: 100,
+    height: 120,
     justifyContent: "center",
     alignItems: "center",
-    gap: 6,
+    gap: 8,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: "#2a2a44",
+    borderColor: "#9b4d75",
     borderStyle: "dashed",
-    backgroundColor: "#12121e",
+    backgroundColor: "#0a0a12",
     flexDirection: "row",
   },
   imageText: {
@@ -318,18 +314,15 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
   titleInput: {
-    borderBottomWidth: 1,
-    borderColor: "#2a2a44",
-    marginBottom: 20,
-    paddingBottom: 12,
-    fontSize: 22,
+    fontSize: 28,
     fontWeight: "700",
     color: "#ffffff",
+    marginBottom: 20,
   },
   contentInput: {
-    minHeight: 280,
-    fontSize: 15,
-    lineHeight: 24,
+    minHeight: 400,
+    fontSize: 16,
+    lineHeight: 26,
     color: "#cccccc",
     textAlignVertical: "top",
   },

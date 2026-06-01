@@ -97,6 +97,17 @@ export default function NoteDetail() {
   const handleDelete = async (id: string) => {
     setDeleting(true);
 
+    const oldPath = getPathFromUrl(imageUrl);
+    if (oldPath) {
+      const { error: deleteError } = await supabase.storage
+        .from("note-images")
+        .remove([oldPath]);
+
+      if (deleteError) {
+        console.log("Error deleting image:", deleteError.message);
+      }
+    }
+
     const result = await deleteNote(id);
 
     if (!result.success) {
@@ -137,24 +148,56 @@ export default function NoteDetail() {
     }
   };
 
+  //get file path
+  const getPathFromUrl = (url: string | null) => {
+    if (!url) return null;
+
+    const path = url.split("/note-images/");
+    return path.length > 1 ? path[1] : null;
+  };
+
   const uploadImage = async (imageUri: string) => {
     try {
-      const base64 = await FileSystem.readAsStringAsync(imageUri, {
-        encoding: "base64",
-      });
+      // Delete old url before uploading new one because Date.now create new filepath everytime
 
-      const binaryStr = atob(base64);
-      const bytes = new Uint8Array(binaryStr.length);
-      for (let i = 0; i < binaryStr.length; i++) {
-        bytes[i] = binaryStr.charCodeAt(i);
+      const oldPath = getPathFromUrl(imageUrl);
+      if (oldPath) {
+        const { error: deleteError } = await supabase.storage
+          .from("note-images")
+          .remove([oldPath]);
+
+        if (deleteError) {
+          console.log("Failed to delete old image:", deleteError.message);
+        } else {
+          console.log("Old image deleted successfully from storage");
+        }
       }
 
-      const filePath = `edit/${Date.now()}.jpg`;
+      //fileSystem => app's storage manager; readAsStringAsync => file reader tool
+      const base64 = await FileSystem.readAsStringAsync(imageUri, {
+        encoding: "base64", //
+      });
+
+      // const binaryStr = atob(base64);
+      // const bytes = new Uint8Array(binaryStr.length);
+      // for (let i = 0; i < binaryStr.length; i++) {
+      //   bytes[i] = binaryStr.charCodeAt(i);
+      // }
+
+      // const filePath = `edit/${Date.now()}.jpg`;
+
+      // Decodes a Base64 string into a raw Uint8Array byte array
+      const bytes = Uint8Array.from(atob(base64), (char) => char.charCodeAt(0));
+
+      // Extracts the file type (like 'png') or defaults to 'jpg'
+      const extension = imageUri.split(".").pop() || "jpg";
+
+      const filePath = `edit/${Date.now()}.${extension}`;
 
       const { data, error } = await supabase.storage
         .from("note-images")
         .upload(filePath, bytes.buffer, {
-          contentType: "image/jpeg",
+          contentType: `image/${extension}`,
           upsert: false,
         });
 
@@ -246,7 +289,7 @@ export default function NoteDetail() {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <KeyboardAvoidingView
         style={styles.flex}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -389,7 +432,7 @@ export default function NoteDetail() {
         loading={deleting}
         noteTitle={title}
       />
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -460,8 +503,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 12,
     paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: "#0d0d18",
   },
   topBarActions: {
     flexDirection: "row",
@@ -570,7 +611,7 @@ const styles = StyleSheet.create({
     fontWeight: "800",
     color: "#ffffff",
     letterSpacing: -0.5,
-    paddingVertical: 14,
+    paddingVertical: 6,
     paddingHorizontal: 4,
     borderBottomWidth: 2,
     borderBottomColor: "#1a1a2e",
@@ -583,7 +624,8 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     backgroundColor: "#0a0a12",
     borderWidth: 1,
-    borderColor: "#1a1a2e",
+    borderColor: "#9b4d75",
+    borderStyle: "dashed",
   },
   editImage: {
     width: "100%",

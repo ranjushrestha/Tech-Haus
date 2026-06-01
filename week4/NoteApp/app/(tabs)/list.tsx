@@ -86,9 +86,27 @@ const Index = () => {
     note.title.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
-  // Delete note + its image from storage (handled inside deleteNote helper)
+  const getPathFromUrl = (url: string | null) => {
+    if (!url) return null;
+
+    const path = url.split("/note-images/");
+    return path.length > 1 ? path[1] : null;
+  };
+
+  // Delete note and its image from storage
   const handleDelete = async (item: Note) => {
     setDeleting(true);
+
+    const oldPath = getPathFromUrl(item.image_url || null);
+    if (oldPath) {
+      const { error: deleteError } = await supabase.storage
+        .from("note-images")
+        .remove([oldPath]);
+
+      if (deleteError) {
+        console.log("Error deleting image in note list:", deleteError.message);
+      }
+    }
 
     const result = await deleteNote(item.id);
 
