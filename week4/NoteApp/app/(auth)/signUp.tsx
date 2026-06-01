@@ -89,7 +89,7 @@ const signUp = () => {
       reset();
       router.navigate({
         pathname: "/verifyScreen",
-        params: { emailAdress: formData.email },
+        params: { emailAddress: formData.email },
       });
     } catch (err) {
       console.log("CATCH ERROR:", err);
