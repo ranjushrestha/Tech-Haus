@@ -13,6 +13,7 @@ import Toast from "react-native-toast-message";
 
 const VerifyScreen = () => {
   const { emailAddress } = useLocalSearchParams();
+  //params can be a string or array of strings
   const email = Array.isArray(emailAddress)
     ? emailAddress[0]
     : (emailAddress ?? "");
