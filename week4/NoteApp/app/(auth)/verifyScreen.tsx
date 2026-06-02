@@ -12,11 +12,14 @@ import { supabase } from "@/lib/supabase";
 import Toast from "react-native-toast-message";
 
 const VerifyScreen = () => {
-  const { emailAddress } = useLocalSearchParams();
+  const { emailAddress, type } = useLocalSearchParams();
   //params can be a string or array of string
   const email = Array.isArray(emailAddress)
     ? emailAddress[0]
     : (emailAddress ?? "");
+
+  const verificationType = Array.isArray(type) ? type[0] : type || "signup";
+
   const [token, setToken] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -24,7 +27,7 @@ const VerifyScreen = () => {
     if (!token.trim()) {
       Toast.show({
         type: "error",
-        text1: "Enter the 8-digit passcode",
+        text1: "Enter the 6-digit passcode",
       });
       return;
     }
@@ -33,7 +36,7 @@ const VerifyScreen = () => {
     const { error } = await supabase.auth.verifyOtp({
       email,
       token,
-      type: "signup",
+      type: verificationType as any,
     });
     setLoading(false);
 
@@ -48,15 +51,18 @@ const VerifyScreen = () => {
 
     Toast.show({
       type: "success",
+      text1: "email verified",
     });
 
-    router.replace("/signIn");
+    router.replace("/signIn"); // redirect to sign in or list?
   };
+
+  //Count down timer
 
   const handleResend = async () => {
     setLoading(true);
     const { error } = await supabase.auth.resend({
-      type: "signup",
+      type: verificationType as any,
       email,
     });
     setLoading(false);
@@ -78,17 +84,20 @@ const VerifyScreen = () => {
 
   return (
     <View style={styles.container}>
+      <Pressable onPress={() => router.replace("/(auth)/signIn")}>
+        <Text style={{ color: "#fff" }}>Back</Text>
+      </Pressable>
       <Text style={styles.heading}>Create your account</Text>
       <Text style={styles.subheading}>We've sent you a passcode</Text>
       <Text style={styles.description}>Please check your inbox at {email}</Text>
 
       <TextInput
-        placeholder="00000000"
+        placeholder="000000"
         placeholderTextColor="#999"
         value={token}
         onChangeText={setToken}
         keyboardType="number-pad"
-        maxLength={8}
+        maxLength={6}
         style={styles.input}
         textAlign="center"
         editable={!loading}

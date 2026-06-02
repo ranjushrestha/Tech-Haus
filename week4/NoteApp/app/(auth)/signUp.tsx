@@ -82,12 +82,13 @@ const signUp = () => {
           visibilityTime: 2000,
         });
 
-        reset();
         router.replace({
           pathname: "/verifyScreen",
-          params: { emailAddress: formData.email },
+          params: { emailAddress: formData.email, type: "signup" },
         });
+
         // setSignUpError("Email already registered. Confirm your email.");
+        reset();
         return;
       }
 
@@ -101,7 +102,7 @@ const signUp = () => {
       reset();
       router.replace({
         pathname: "/verifyScreen",
-        params: { emailAddress: formData.email },
+        params: { emailAddress: formData.email, type: "signup" },
       });
     } catch (err) {
       console.log("CATCH ERROR:", err);

@@ -22,6 +22,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import EmptyState from "@/components/EmptyState";
 import { deleteNote } from "@/lib/deleteNote";
 import Toast from "react-native-toast-message";
+import { useDebounce } from "@/hooks/useDebounce";
 
 type Note = {
   id: string;
@@ -40,6 +41,7 @@ const Index = () => {
   const [deleting, setDeleting] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [refreshing, setRefreshing] = useState(false);
+  const [inputText, setInputText] = useState("");
 
   const { user } = useStore();
 
@@ -82,11 +84,23 @@ const Index = () => {
       setRefreshing(false);
     }, 2000);
   }, []);
+
   // Filter notes by search term (title only)
   const filteredNotes = notes.filter((note) =>
     note.title.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
+  const debounceSearch = useDebounce(
+    useCallback((text: string) => {
+      setSearchTerm(text);
+    }, []),
+    500,
+  );
+
+  const handleSearch = (text: string) => {
+    setInputText(text);
+    debounceSearch(text);
+  };
   // const getPathFromUrl = (url: string | null) => {
   //   if (!url) return null;
 
@@ -216,73 +230,75 @@ const Index = () => {
       </View>
 
       {/* Search bar */}
-      <KeyboardAvoidingView
+      {/* <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
-      >
-        <View style={styles.searchBar}>
-          <Ionicons name="search" size={16} color="#55557a" />
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Search notes..."
-            placeholderTextColor="#55557a"
-            value={searchTerm}
-            onChangeText={setSearchTerm}
-          />
-          {searchTerm.length > 0 && (
-            <Pressable
-              onPress={() => setSearchTerm("")}
-              style={styles.clearButton}
-            >
-              <Ionicons name="close-circle" size={18} color="#55557a" />
-            </Pressable>
-          )}
-        </View>
-
-        <FlatList
-          data={filteredNotes}
-          keyExtractor={(item) => item.id}
-          showsVerticalScrollIndicator={false}
-          onScrollBeginDrag={() => Keyboard.dismiss()}
-          keyboardShouldPersistTaps="handled"
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={onRefresh}
-              colors={["#9b4d75"]} //andriod
-              tintColor="#9b4d75"
-            />
-          }
-          contentContainerStyle={[
-            styles.listContent,
-            filteredNotes.length === 0 && styles.emptyListContent,
-          ]}
-          ListHeaderComponent={
-            searchTerm && filteredNotes.length > 0 ? (
-              <View style={styles.countBadge}>
-                <Ionicons name="search" size={13} color="#9b4d75" />
-                <Text style={styles.countText}>
-                  {filteredNotes.length} result
-                  {filteredNotes.length !== 1 ? "s" : ""}
-                </Text>
-              </View>
-            ) : null
-          }
-          ListEmptyComponent={
-            notes.length === 0 ? (
-              <EmptyState
-                emptyTitle="No notes yet"
-                emptyText="Tap + to create your first note"
-              />
-            ) : (
-              <EmptyState
-                emptyTitle="No results"
-                emptyText="Try a different search term"
-              />
-            )
-          }
-          renderItem={renderItem}
+        style={{ flex: 1 }}
+      > */}
+      <View style={styles.searchBar}>
+        <Ionicons name="search" size={16} color="#55557a" />
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Search notes..."
+          placeholderTextColor="#55557a"
+          value={inputText}
+          onChangeText={handleSearch}
         />
-      </KeyboardAvoidingView>
+        {searchTerm.length > 0 && (
+          <Pressable
+            onPress={() => setSearchTerm("")}
+            style={styles.clearButton}
+          >
+            <Ionicons name="close-circle" size={18} color="#55557a" />
+          </Pressable>
+        )}
+      </View>
+
+      <FlatList
+        // style={{ flex: 1 }}
+        data={filteredNotes}
+        keyExtractor={(item) => item.id}
+        showsVerticalScrollIndicator={false}
+        onScrollBeginDrag={() => Keyboard.dismiss()}
+        keyboardShouldPersistTaps="handled"
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={["#9b4d75"]} //andriod
+            tintColor="#9b4d75"
+          />
+        }
+        contentContainerStyle={[
+          styles.listContent,
+          filteredNotes.length === 0 && styles.emptyListContent,
+        ]}
+        ListHeaderComponent={
+          searchTerm && filteredNotes.length > 0 ? (
+            <View style={styles.countBadge}>
+              <Ionicons name="search" size={13} color="#9b4d75" />
+              <Text style={styles.countText}>
+                {filteredNotes.length} result
+                {filteredNotes.length !== 1 ? "s" : ""}
+              </Text>
+            </View>
+          ) : null
+        }
+        ListEmptyComponent={
+          notes.length === 0 ? (
+            <EmptyState
+              emptyTitle="No notes yet"
+              emptyText="Tap + to create your first note"
+            />
+          ) : (
+            <EmptyState
+              emptyTitle="No results"
+              emptyText="Try a different search term"
+            />
+          )
+        }
+        renderItem={renderItem}
+      />
+      {/* </KeyboardAvoidingView> */}
 
       {/* Floating create button */}
       <Pressable
