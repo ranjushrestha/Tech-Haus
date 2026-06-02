@@ -24,7 +24,7 @@ const VerifyScreen = () => {
     if (!token.trim()) {
       Toast.show({
         type: "error",
-        text1: "Enter the 6-digit passcode",
+        text1: "Enter the 8-digit passcode",
       });
       return;
     }
@@ -83,12 +83,12 @@ const VerifyScreen = () => {
       <Text style={styles.description}>Please check your inbox at {email}</Text>
 
       <TextInput
-        placeholder="000000"
+        placeholder="00000000"
         placeholderTextColor="#999"
         value={token}
         onChangeText={setToken}
         keyboardType="number-pad"
-        maxLength={6}
+        maxLength={8}
         style={styles.input}
         textAlign="center"
         editable={!loading}
