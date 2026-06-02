@@ -54,7 +54,11 @@ const SignIn = () => {
 
     if (error) {
       if (error.message.includes("confirmed")) {
-        setAuthError("Email not confirmed");
+        // setAuthError("Email not confirmed");
+        router.replace({
+          pathname: "/verifyScreen",
+          params: { emailAddress: data.email }, //token expired or invalid
+        });
       } else {
         setAuthError("Invalid email or password");
       }
