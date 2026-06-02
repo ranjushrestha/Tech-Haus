@@ -75,18 +75,19 @@ const signUp = () => {
       }
 
       if (!data.user.confirmed_at) {
-        Toast.show({
-          type: "success",
-          text1: "Check your email for the verification code",
-          position: "top",
-          visibilityTime: 2000,
-        });
+        // Toast.show({
+        //   type: "success",
+        //   text1: "Check your email for the verification code",
+        //   position: "top",
+        //   visibilityTime: 2000,
+        // });
 
-        reset();
-        router.replace({
-          pathname: "/verifyScreen",
-          params: { emailAddress: formData.email },
-        });
+        // reset();
+        // router.replace({
+        //   pathname: "/verifyScreen",
+        //   params: { emailAddress: formData.email },
+        // });
+        setSignUpError("Email already registered. Confirm your email.");
         return;
       }
 
@@ -98,7 +99,7 @@ const signUp = () => {
       });
 
       reset();
-      router.replace("/signIn");
+      router.replace("/verifyScreen");
     } catch (err) {
       console.log("CATCH ERROR:", err);
       setSignUpError("Something went wrong. Please try again.");

@@ -1,6 +1,6 @@
 POLISHING
 //use secure storage for data persistence as asyncStorage is not encrypted.
-//Email confirm page == Done
+//Email confirm page
 //router.methods
 //white flash on back from create screen
 //Sign in with google Oauth with supabase
