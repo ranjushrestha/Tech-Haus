@@ -280,7 +280,7 @@ const signUp = () => {
 
             <View style={styles.footer}>
               <Text style={styles.footerText}>Already have an account?</Text>
-              <Pressable onPress={() => router.dismissTo("/signIn")}>
+              <Pressable onPress={() => router.replace("/signIn")}>
                 <Text style={styles.footerLink}>Sign In</Text>
               </Pressable>
             </View>
