@@ -32,6 +32,7 @@ const VerifyScreen = () => {
   //clear field when error or while resending code
   const handleClear = () => {
     if (otpRef.current) {
+      setToken("");
       otpRef.current.clear();
     }
   };
@@ -43,6 +44,10 @@ const VerifyScreen = () => {
         text1: "Enter the 6-digit passcode",
       });
       return;
+    }
+
+    if (!email) {
+      router.replace("/signIn");
     }
 
     setLoading(true);
@@ -110,7 +115,7 @@ const VerifyScreen = () => {
           borderWidth: 1,
           borderColor: "#1a1a2e",
         }}
-        onPress={() => router.replace("/(auth)/signIn")}
+        onPress={() => router.replace("/signIn")}
       >
         <Ionicons name="chevron-back" size={22} color="#ffffff" />
       </Pressable>
@@ -122,7 +127,7 @@ const VerifyScreen = () => {
           justifyContent: "center",
         }}
       >
-        <Text style={styles.heading}>Create your account</Text>
+        <Text style={styles.heading}>Verify your email</Text>
         <Text style={styles.subheading}>We've sent you a passcode</Text>
         <Text style={styles.description}>
           Please check your inbox at {email}
