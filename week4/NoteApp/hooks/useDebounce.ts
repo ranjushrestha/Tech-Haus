@@ -11,7 +11,7 @@ export const useDebounce = (func: (value: string) => void, delay: number) => {
     (...args: [string]) => {
       if (timerRef.current) clearTimeout(timerRef.current);
       timerRef.current = setTimeout(() => {
-        func(...args);
+        func(...args); // with es6 we can bypass func.apply(this,args) ; this is undefined with spread operator
       }, delay);
     },
     [func, delay],

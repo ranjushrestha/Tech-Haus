@@ -3,11 +3,13 @@ import {
   KeyboardAvoidingView,
   Platform,
   Pressable,
+  RefreshControl,
+  ScrollView,
   StyleSheet,
   Text,
   View,
 } from "react-native";
-import React, { useRef, useState } from "react";
+import React, { useCallback, useRef, useState } from "react";
 import { router, useLocalSearchParams } from "expo-router";
 import { supabase } from "@/lib/supabase";
 import Toast from "react-native-toast-message";
@@ -26,8 +28,17 @@ const VerifyScreen = () => {
   const [token, setToken] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [refreshing, setRefreshing] = useState(false);
 
   let otpRef = useRef<any>(null);
+
+  //redirect to signin on refresh pull
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    setTimeout(() => {
+      router.replace("/signIn");
+    }, 1000);
+  }, []);
 
   //clear field when error or while resending code
   const handleClear = () => {
@@ -104,7 +115,7 @@ const VerifyScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Pressable
+      {/* <Pressable
         style={{
           width: 38,
           height: 38,
@@ -118,74 +129,86 @@ const VerifyScreen = () => {
         onPress={() => router.replace("/signIn")}
       >
         <Ionicons name="chevron-back" size={22} color="#ffffff" />
-      </Pressable>
+      </Pressable> */}
+
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{
           flex: 1,
-          padding: 24,
-          justifyContent: "center",
         }}
       >
-        <Text style={styles.heading}>Verify your email</Text>
-        <Text style={styles.subheading}>We've sent you a passcode</Text>
-        <Text style={styles.description}>
-          Please check your inbox at {email}
-        </Text>
-
-        <OTPTextInput
-          ref={otpRef}
-          inputCount={6}
-          tintColor="#7c3aed"
-          offTintColor="#334155"
-          handleTextChange={(otpCode) => {
-            console.log("otpCode:", otpCode);
-            setToken(otpCode);
+        <ScrollView
+          contentContainerStyle={{
+            flexGrow: 1,
+            padding: 24,
+            justifyContent: "center",
           }}
-          textInputStyle={
-            {
-              borderBottomWidth: 1,
-              borderWidth: 1,
-              borderRadius: 10,
-              borderColor: "#334155",
-              backgroundColor: "#0f172a",
-              color: "#fff",
-              height: 56,
-              width: "14%",
-              fontSize: 22,
-              fontWeight: "600",
-            } as any
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
           }
-          textContentType="oneTimeCode"
-          containerStyle={{ width: "100%", marginBottom: 20 }}
-        />
-
-        <Pressable
-          onPress={handleVerification}
-          disabled={loading}
-          style={({ pressed }) => [
-            styles.button,
-            pressed && styles.buttonPressed,
-            loading && styles.buttonDisabled,
-          ]}
         >
-          {loading ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={styles.buttonText}>Verify</Text>
+          <Text style={styles.heading}>Verify your email</Text>
+          <Text style={styles.subheading}>We've sent you a passcode</Text>
+          <Text style={styles.description}>
+            Please check your inbox at {email}
+          </Text>
+
+          <OTPTextInput
+            ref={otpRef}
+            inputCount={6}
+            tintColor="#7c3aed"
+            offTintColor="#334155"
+            handleTextChange={(otpCode) => {
+              console.log("otpCode:", otpCode);
+              setToken(otpCode);
+            }}
+            textInputStyle={
+              {
+                borderBottomWidth: 1,
+                borderWidth: 1,
+                borderRadius: 10,
+                borderColor: "#334155",
+                backgroundColor: "#0f172a",
+                color: "#fff",
+                height: 56,
+                width: "14%",
+                fontSize: 22,
+                fontWeight: "600",
+              } as any
+            }
+            // textContentType="oneTimeCode"
+            containerStyle={{ width: "100%", marginBottom: 20 }}
+          />
+
+          <Pressable
+            onPress={handleVerification}
+            disabled={loading}
+            style={({ pressed }) => [
+              styles.button,
+              pressed && styles.buttonPressed,
+              loading && styles.buttonDisabled,
+            ]}
+          >
+            {loading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.buttonText}>Verify</Text>
+            )}
+          </Pressable>
+
+          {error && (
+            <Text style={{ color: "#fe6161", textAlign: "center" }}>
+              {error}
+            </Text>
           )}
-        </Pressable>
-
-        {error && (
-          <Text style={{ color: "#fe6161", textAlign: "center" }}>{error}</Text>
-        )}
-        <Pressable
-          onPress={handleResend}
-          disabled={loading}
-          style={styles.linkButton}
-        >
-          <Text style={styles.linkText}>Resend code</Text>
-        </Pressable>
+          <Pressable
+            onPress={handleResend}
+            disabled={loading}
+            style={styles.linkButton}
+          >
+            <Text style={styles.linkText}>Resend code</Text>
+          </Pressable>
+        </ScrollView>
       </KeyboardAvoidingView>
     </View>
   );
