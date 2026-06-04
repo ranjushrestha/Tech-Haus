@@ -54,7 +54,11 @@ const SignIn = () => {
 
     if (error) {
       if (error.message.includes("confirmed")) {
-        setAuthError("Email not confirmed");
+        // setAuthError("Email not confirmed");
+        router.replace({
+          pathname: "/verifyScreen",
+          params: { emailAddress: data.email, type: "signup" }, //token expired or invalid
+        });
       } else {
         setAuthError("Invalid email or password");
       }
@@ -81,11 +85,25 @@ const SignIn = () => {
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={styles.keyboardView}
       >
+        <View style={styles.brandSection}>
+          <View style={styles.logoCircle}>
+            <Ionicons name="document-text" size={28} color="#9b4d75" />
+          </View>
+          <Text style={styles.brandName}>NoteApp</Text>
+          <Text style={styles.brandTagline}>Your thoughts, organized</Text>
+        </View>
+
         <View style={styles.card}>
-          <Text style={styles.title}>Sign In</Text>
+          <Text style={styles.title}>Welcome back</Text>
 
           {authError ? (
             <View style={styles.errorBox}>
+              <Ionicons
+                name="alert-circle"
+                size={16}
+                color="#ff3b5c"
+                style={{ marginRight: 6 }}
+              />
               <Text style={styles.errorText}>{authError}</Text>
             </View>
           ) : null}
@@ -102,60 +120,73 @@ const SignIn = () => {
                 },
               }}
               render={({ field: { value, onChange, onBlur } }) => (
-                <TextInput
-                  placeholder="Enter your email"
-                  placeholderTextColor="#979595"
-                  value={value}
-                  onChangeText={onChange}
-                  onBlur={onBlur}
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  style={styles.input}
-                />
+                <View>
+                  <Text style={styles.fieldLabel}>Email</Text>
+                  <TextInput
+                    placeholder="Enter your email"
+                    placeholderTextColor="#55557a"
+                    value={value}
+                    onChangeText={onChange}
+                    onBlur={onBlur}
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                    style={[styles.input, errors.email && styles.inputError]}
+                  />
+                  {errors.email && (
+                    <Text style={styles.fieldError}>
+                      {errors.email.message}
+                    </Text>
+                  )}
+                </View>
               )}
             />
 
-            {errors.email && (
-              <Text style={styles.fieldError}>{errors.email.message}</Text>
-            )}
+            <Controller
+              control={control}
+              name="password"
+              rules={{
+                required: "Password required",
+              }}
+              render={({ field: { value, onChange } }) => (
+                <View>
+                  <Text style={styles.fieldLabel}>Password</Text>
+                  <View
+                    style={[
+                      styles.passwordContainer,
+                      errors.password && styles.inputError,
+                    ]}
+                  >
+                    <TextInput
+                      placeholder="Enter your password"
+                      placeholderTextColor="#55557a"
+                      secureTextEntry={!showPassword}
+                      value={value}
+                      onChangeText={(text) => {
+                        setAuthError("");
+                        onChange(text);
+                      }}
+                      style={styles.passwordInput}
+                    />
 
-            <View style={styles.passwordContainer}>
-              <Controller
-                control={control}
-                name="password"
-                rules={{
-                  required: "Password required",
-                }}
-                render={({ field: { value, onChange } }) => (
-                  <TextInput
-                    placeholder="Enter your password"
-                    placeholderTextColor="#979595"
-                    secureTextEntry={!showPassword}
-                    value={value}
-                    onChangeText={(text) => {
-                      setAuthError("");
-                      onChange(text);
-                    }}
-                    style={styles.input}
-                  />
-                )}
-              />
-
-              <Pressable
-                style={styles.eyeContainer}
-                onPress={() => setShowPassword((prev) => !prev)}
-              >
-                <Ionicons
-                  name={showPassword ? "eye-off" : "eye"}
-                  size={16}
-                  color="gray"
-                />
-              </Pressable>
-            </View>
-
-            {errors.password && (
-              <Text style={styles.fieldError}>{errors.password.message}</Text>
-            )}
+                    <Pressable
+                      style={styles.eyeContainer}
+                      onPress={() => setShowPassword((prev) => !prev)}
+                    >
+                      <Ionicons
+                        name={showPassword ? "eye-off" : "eye"}
+                        size={18}
+                        color="#8888bb"
+                      />
+                    </Pressable>
+                  </View>
+                  {errors.password && (
+                    <Text style={styles.fieldError}>
+                      {errors.password.message}
+                    </Text>
+                  )}
+                </View>
+              )}
+            />
 
             <Pressable
               style={[styles.button, loading && styles.buttonDisabled]}
@@ -170,13 +201,10 @@ const SignIn = () => {
             </Pressable>
           </View>
 
-          <View style={styles.singUpContainer}>
-            <Text style={styles.signUp}>Don't have an account?</Text>
-
+          <View style={styles.footer}>
+            <Text style={styles.footerText}>Don't have an account?</Text>
             <Pressable onPress={() => router.push("/signUp")}>
-              <Text style={[styles.singUpText, styles.signUp]}>
-                Register Now!
-              </Text>
+              <Text style={styles.footerLink}>Register Now!</Text>
             </Pressable>
           </View>
         </View>
@@ -190,68 +218,144 @@ export default SignIn;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#ddaac6",
+    backgroundColor: "#050508",
   },
 
   keyboardView: {
     flex: 1,
-    marginHorizontal: 12,
+    paddingHorizontal: 24,
     justifyContent: "center",
+  },
+
+  brandSection: {
+    alignItems: "center",
+    marginBottom: 40,
+  },
+
+  logoCircle: {
+    width: 64,
+    height: 64,
+    borderRadius: 18,
+    backgroundColor: "#12121e",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: "#2a2a44",
+  },
+
+  brandName: {
+    fontSize: 32,
+    fontWeight: "800",
+    color: "#ffffff",
+    letterSpacing: -0.5,
+    marginBottom: 4,
+  },
+
+  brandTagline: {
+    fontSize: 14,
+    color: "#55557a",
+    letterSpacing: 0.2,
   },
 
   card: {
     width: "100%",
-    maxWidth: 350,
-    padding: 24,
-    borderRadius: 14,
+    maxWidth: 400,
+    alignSelf: "center",
+    backgroundColor: "#0a0a12",
+    borderRadius: 24,
+    padding: 28,
+    borderWidth: 1,
+    borderColor: "#1a1a2e",
   },
 
   title: {
-    fontSize: 26,
+    fontSize: 24,
     fontWeight: "700",
-    textAlign: "center",
+    color: "#ffffff",
     marginBottom: 24,
-    color: "#333",
+    letterSpacing: -0.3,
   },
 
   errorBox: {
-    backgroundColor: "#c45a5a",
-    padding: 8,
-    borderRadius: 6,
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#2d1122",
+    padding: 14,
+    borderRadius: 12,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: "#4d1a33",
   },
 
   errorText: {
-    color: "white",
-    textAlign: "center",
+    color: "#ff3b5c",
+    fontSize: 14,
+    flex: 1,
   },
 
   form: {
-    gap: 12,
-    marginVertical: 20,
+    gap: 20,
+  },
+
+  fieldLabel: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: "#55557a",
+    marginBottom: 8,
+    textTransform: "uppercase",
+    letterSpacing: 0.8,
   },
 
   input: {
     borderWidth: 1,
-    borderColor: "#d1d1d1",
-    borderRadius: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
+    borderColor: "#2a2a44",
+    borderRadius: 14,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
     fontSize: 16,
-    backgroundColor: "#fafafa",
-    color: "#000",
+    backgroundColor: "#12121e",
+    color: "#ffffff",
+  },
+
+  inputError: {
+    borderColor: "#ff3b5c",
   },
 
   fieldError: {
-    color: "#b00020",
+    color: "#ff3b5c",
     fontSize: 13,
+    marginTop: 6,
+  },
+
+  passwordContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#2a2a44",
+    borderRadius: 14,
+    backgroundColor: "#12121e",
+  },
+
+  passwordInput: {
+    flex: 1,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    fontSize: 16,
+    color: "#ffffff",
+  },
+
+  eyeContainer: {
+    paddingHorizontal: 14,
+    paddingVertical: 14,
   },
 
   button: {
     backgroundColor: "#9b4d75",
-    paddingVertical: 14,
-    borderRadius: 10,
+    paddingVertical: 16,
+    borderRadius: 14,
     alignItems: "center",
-    marginTop: 8,
+    marginTop: 12,
   },
 
   buttonDisabled: {
@@ -259,35 +363,27 @@ const styles = StyleSheet.create({
   },
 
   buttonText: {
-    color: "#fff",
+    color: "#ffffff",
     fontSize: 16,
-    fontWeight: "600",
+    fontWeight: "700",
+    letterSpacing: 0.3,
   },
 
-  passwordContainer: {
-    position: "relative",
-    width: "100%",
-  },
-
-  eyeContainer: {
-    position: "absolute",
-    right: 18,
-    top: "50%",
-    transform: [{ translateY: -8 }],
-  },
-
-  singUpContainer: {
+  footer: {
     flexDirection: "row",
     justifyContent: "center",
-    gap: 4,
+    gap: 6,
+    marginTop: 28,
   },
 
-  singUpText: {
-    color: "#9b4d75",
-  },
-
-  signUp: {
-    fontWeight: "400",
+  footerText: {
+    color: "#55557a",
     fontSize: 14,
+  },
+
+  footerLink: {
+    color: "#9b4d75",
+    fontSize: 14,
+    fontWeight: "700",
   },
 });

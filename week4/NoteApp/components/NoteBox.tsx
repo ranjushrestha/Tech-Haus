@@ -1,5 +1,5 @@
-import { StyleSheet, Text, View } from 'react-native'
-import React from 'react'
+import { StyleSheet, Text, View } from "react-native";
+import React from "react";
 
 type Note = {
   id: string;
@@ -8,39 +8,69 @@ type Note = {
   user_id?: string;
   created_at?: string;
 };
-const NoteBox = ({item} :{item: Note}) => {
+const NoteBox = ({ item }: { item: Note }) => {
   return (
-     <View style={styles.noteBox}>
-               <Text numberOfLines={1} style={styles.title}>
-                 {item.title?.trim()
-                   ? item.title
-                   : item.content?.trim().split(" ")[0] || "Untitled"}
-               </Text>
-   
-               <Text  style={styles.date}>
-             {item.created_at?.split('T')[0]}
-               </Text>
-             </View>
-  )
-}
+    <View style={styles.noteBox}>
+      <View style={styles.accentBar} />
+      <View style={styles.contentWrap}>
+        <Text numberOfLines={1} style={styles.title}>
+          {item.title?.trim()
+            ? item.title
+            : item.content?.trim().split(" ")[0] || "Untitled"}
+        </Text>
+        <Text numberOfLines={2} style={styles.preview}>
+          {item.content?.trim() || "No content"}
+        </Text>
+        <Text style={styles.date}>
+          {item.created_at
+            ? new Date(item.created_at).toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+              })
+            : ""}
+        </Text>
+      </View>
+    </View>
+  );
+};
 
-export default NoteBox
+export default NoteBox;
 
 const styles = StyleSheet.create({
-      noteBox: {
+  noteBox: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  accentBar: {
+    width: 4,
+    height: 40,
+    borderRadius: 2,
+    backgroundColor: "#9b4d75",
+    marginRight: 14,
+  },
+  contentWrap: {
     flex: 1,
   },
-
   title: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: "700",
-    color: "#222",
+    color: "#ffffff",
+    letterSpacing: -0.2,
+    marginBottom: 2,
   },
-
+  preview: {
+    fontSize: 13,
+    lineHeight: 18,
+    color: "#8888bb",
+  },
   date: {
     marginTop: 6,
-    fontSize: 14,
-    lineHeight: 20,
-    color: "#555",
+    fontSize: 11,
+    color: "#4f4f63",
+    fontWeight: "500",
+    textTransform: "uppercase",
+    letterSpacing: 0.3,
   },
-})
+});

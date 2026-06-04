@@ -13,10 +13,17 @@ export default function RootLayout() {
   useEffect(() => {
     const initializeAuth = async () => {
       const {
-        data: { session },
-      } = await supabase.auth.getSession();
+        data: { user },
+        error,
+      } = await supabase.auth.getUser();
 
-      setUserData(session?.user ?? null);
+      if (error || !user) {
+        setUserData(null);
+        setAuthLoading(false);
+        return;
+      }
+
+      setUserData(user ?? null);
       setAuthLoading(false);
     };
 
@@ -26,9 +33,10 @@ export default function RootLayout() {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
+      console.log("EVENT:", _event);
       console.log("auth changed user:", session?.user ?? null);
 
-      setUserData(session?.user ?? null);
+      initializeAuth();
     });
 
     //clean up
@@ -43,19 +51,20 @@ export default function RootLayout() {
           justifyContent: "center",
           alignItems: "center",
         }}
+        // className="flex flex-1 justify-center items-center"
       >
-        <ActivityIndicator size="large" color="#9b4d75" />
+        <ActivityIndicator size="large" color="#a12867" />
       </View>
     );
   }
 
   return (
     <SafeAreaProvider>
-      <SafeAreaView style={{ flex: 1 }}>
-        <StatusBar style="dark" />
+      <SafeAreaView style={{ flex: 1, backgroundColor: "#050508" }}>
+        <StatusBar style="light" />
 
         <Stack screenOptions={{ headerShown: false }} />
-        <Toast />
+        <Toast swipeable={true} />
       </SafeAreaView>
     </SafeAreaProvider>
   );

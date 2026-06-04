@@ -1,6 +1,5 @@
 import { supabase } from "@/lib/supabase";
 import { router } from "expo-router";
-import { goBack } from "expo-router/build/global-state/routing";
 import React, { useState } from "react";
 import {
   ActivityIndicator,
@@ -17,69 +16,34 @@ import {
 import Toast from "react-native-toast-message";
 import { Ionicons } from "@expo/vector-icons";
 import { useStore } from "@/store/useStore";
+import * as FileSystem from "expo-file-system/legacy";
 import * as ImagePicker from "expo-image-picker";
 
-const Notes = () => {
+const CreateNote = () => {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-
+  const [image, setImage] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
-  const [noteError, setNoteError] = useState("");
-
-  const [image, setImage] = useState<string | null>();
 
   const user = useStore((state) => state.user);
 
-  const handleAdd = async () => {
-    if (!title.trim() || !content.trim()) {
-      setNoteError("fill all fields");
-      return;
-    }
-
-    if (!user) return null;
-
-    setSaving(true);
-
-    const { data, error } = await supabase
-      .from("notes")
-      .insert({
-        title: title.trim(),
-        content: content.trim(),
-        user_id: user.id,
-      })
-      .select()
-      .single();
-
-    console.log(data);
-
-    setSaving(false);
-
-    if (error) {
-      console.log("Insert error:", error.message);
-      return;
-    }
-
-    setTitle("");
-    setContent("");
-
-    Toast.show({
-      type: "success",
-      text1: "Note saved successfully",
-      position: "top",
-      visibilityTime: 1500,
-    });
-
-    router.dismissTo("/list");
-  };
-
-  async function requestPermissions() {
+  // Step 1: Ask for permission to access the photo libraryr
+  const requestPermissions = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     return status === "granted";
-  }
+  };
 
+  // Step 2: Open the image picker and store the local URI
   const pickImage = async () => {
     const hasPermission = await requestPermissions();
-    if (!hasPermission) return null;
+    if (!hasPermission) {
+      Toast.show({
+        type: "error",
+        text1: "Permission denied",
+        text2: "Please allow photo access to add an image.",
+      });
+      return;
+    }
 
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ["images"],
@@ -88,28 +52,143 @@ const Notes = () => {
       quality: 0.7,
     });
 
-    console.log("Image result", result);
     if (!result.canceled) {
+      // This is a local file URI like: file:///var/mobile/.../photo.jpg
       setImage(result.assets[0].uri);
     }
   };
+
+  // Step 3: Upload image to Supabase Storage, return the public URL
+  const uploadImage = async (userId: string, imageUri: string) => {
+    try {
+      // Read the local file as a base64 string (React Native safe approach)
+      const base64 = await FileSystem.readAsStringAsync(imageUri, {
+        encoding: "base64",
+      });
+
+      // This is required because FormData/Blob don't work properly in React Native
+      // atob converts base64 to binary string eg: SGVsbG8gV29ybGQ to "Hello World" single byte
+      // then charCodeAt converts return integer from Unicode code 8 bit then
+      //into a raw Uint8Array byte array
+      const binaryStr = atob(base64);
+      const bytes = new Uint8Array(binaryStr.length);
+      for (let i = 0; i < binaryStr.length; i++) {
+        bytes[i] = binaryStr.charCodeAt(i);
+      }
+
+      // File path inside the bucket: userId/timestamp.jpg
+      const filePath = `${userId}/${Date.now()}.jpg`;
+
+      const { data, error } = await supabase.storage
+        .from("note-images")
+        .upload(filePath, bytes.buffer, {
+          contentType: `image/jpg`,
+          upsert: false, //if filePath already exist do not overwrite
+        });
+
+      if (error) {
+        console.log("Upload error:", error.message);
+        return null;
+      }
+
+      // Get the permanent public URL for the uploaded file
+      const { data: publicData } = supabase.storage
+        .from("note-images")
+        .getPublicUrl(data.path);
+
+      return publicData.publicUrl;
+    } catch (error) {
+      console.log("Upload catch error:", error);
+      return null;
+    }
+  };
+
+  // Step 4: Save the note (upload image first if one was picked, then insert note)
+  const handleAdd = async () => {
+    if (!title.trim() || !content.trim()) {
+      Toast.show({
+        type: "error",
+        text1: "Missing fields",
+        text2: "Please add both title and content.",
+      });
+      return;
+    }
+
+    if (!user) return;
+
+    setSaving(true);
+
+    try {
+      let imageUrl: string | null = null;
+
+      if (image) {
+        imageUrl = await uploadImage(user.id, image);
+      }
+
+      const { data, error } = await supabase
+        .from("notes")
+        .insert({
+          title: title.trim(),
+          content: content.trim(),
+          user_id: user.id,
+          image_url: imageUrl, // null if no image was picked
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.log("Insert error:", error.message);
+        Toast.show({
+          type: "error",
+          text1: "Save failed",
+          text2: error.message,
+        });
+        return;
+      }
+
+      console.log("Created note:", data);
+
+      setTitle("");
+      setContent("");
+      setImage(null);
+
+      Toast.show({
+        type: "success",
+        text1: "Note saved successfully",
+        position: "top",
+        visibilityTime: 1000,
+      });
+
+      router.back();
+    } catch (error) {
+      console.log("Save note error:", error);
+      Toast.show({
+        type: "error",
+        text1: "Something went wrong",
+        text2: "Please try again.",
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return (
     <View style={styles.container}>
-      <View
-        style={{
-          flexDirection: "row",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        <Pressable style={{ marginLeft: 2 }} onPress={() => goBack()}>
-          <Ionicons name="arrow-back" size={28} />
+      <View style={styles.header}>
+        <Pressable style={styles.iconButton} onPress={() => router.back()}>
+          <Ionicons name="chevron-back" size={24} color="#ffffff" />
         </Pressable>
-        <Pressable style={styles.checkButton} onPress={handleAdd}>
+
+        <Text style={styles.heading}>New Note</Text>
+
+        <Pressable
+          style={[styles.iconButton, styles.saveButton]}
+          onPress={handleAdd}
+        >
           {saving ? (
-            <ActivityIndicator size="small" color="#9b4d75" />
+            <ActivityIndicator size="small" color="#ffffff" />
           ) : (
-            <Ionicons name="checkmark" size={30} color="#9b4d75" />
+            <Ionicons name="checkmark" size={22} color="#ffffff" />
           )}
         </Pressable>
       </View>
@@ -118,135 +197,131 @@ const Notes = () => {
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={styles.keyboardContainer}
       >
-        <View style={styles.card}>
-          <Text style={styles.heading}>Create Note</Text>
-
-          <Text style={{ fontSize: 14, color: "red" }}>{noteError}</Text>
-
+        <ScrollView
+          style={styles.scroll}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
           <TextInput
-            placeholder="Title"
+            placeholder="Note title"
             value={title}
-            onChangeText={(title) => {
-              setNoteError("");
-              setTitle(title);
-            }}
+            onChangeText={setTitle}
             style={styles.titleInput}
+            placeholderTextColor="#55557a"
           />
 
-          <ScrollView showsVerticalScrollIndicator={false}>
-            <View
-              style={{
-                overflow: "hidden",
-              }}
-            >
-              <Pressable
-                style={{ justifyContent: "center", alignItems: "center" }}
-                onPress={pickImage}
-              >
-                {image ? (
-                  <Image
-                    source={{ uri: image }}
-                    style={{
-                      width: 300,
-                      height: 180,
-                      objectFit: "cover",
-                      borderRadius: 20,
-                      borderWidth: 4,
-                      borderColor: "#9f798d",
-                    }}
-                  />
-                ) : (
-                  <View
-                    style={{
-                      width: 100,
-                      height: 80,
-                      justifyContent: "center",
-                      alignItems: "center",
-                    }}
-                  >
-                    <Ionicons name="image-outline" size={22} color="#9b4d75" />
-                    <Text style={{ color: "#9b4d75" }}>Select an image</Text>
-                  </View>
-                )}
-              </Pressable>
-            </View>
+          <Pressable style={styles.imagePicker} onPress={pickImage}>
+            {image ? (
+              <Image source={{ uri: image }} style={styles.image} />
+            ) : (
+              <View style={styles.imagePlaceholder}>
+                <Ionicons name="image-outline" size={20} color="#55557a" />
+                <Text style={styles.imageText}>Add photo</Text>
+              </View>
+            )}
+          </Pressable>
 
-            <TextInput
-              placeholder="Content"
-              value={content}
-              onChangeText={(content) => {
-                setNoteError("");
-                setContent(content);
-              }}
-              multiline
-              textAlignVertical="top"
-              style={styles.contentInput}
-            />
-          </ScrollView>
-        </View>
+          <TextInput
+            placeholder="Start writing..."
+            value={content}
+            onChangeText={setContent}
+            multiline
+            textAlignVertical="top"
+            style={styles.contentInput}
+            placeholderTextColor="#55557a"
+          />
+        </ScrollView>
       </KeyboardAvoidingView>
     </View>
   );
 };
 
-export default Notes;
+export default CreateNote;
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
-    paddingHorizontal: 8,
+    backgroundColor: "#050508",
   },
-
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "#1a1a2e",
+  },
   keyboardContainer: {
     flex: 1,
   },
-
-  card: {
+  scroll: {
     flex: 1,
-    borderWidth: 2,
-    borderRadius: 20,
-    borderColor: "#9b4d75",
-    padding: 12,
-    marginTop: 8,
   },
-
+  scrollContent: {
+    paddingHorizontal: 20,
+    paddingTop: 24,
+    paddingBottom: 42,
+  },
   heading: {
-    fontSize: 26,
-    fontWeight: "bold",
-    color: "#9b4d75",
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#ffffff",
+    letterSpacing: -0.3,
   },
-
-  checkButton: {
-    padding: 8,
+  iconButton: {
+    width: 38,
+    height: 38,
+    borderRadius: 12,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#12121e",
+    borderWidth: 1,
+    borderColor: "#2a2a44",
   },
-
-  titleInput: {
-    borderBottomWidth: 2,
+  saveButton: {
+    backgroundColor: "#9b4d75",
     borderColor: "#9b4d75",
-    marginBottom: 18,
-    paddingBottom: 6,
-    fontSize: 20,
-    fontWeight: "600",
   },
-
-  contentInput: {
-    flex: 1,
-    fontSize: 16,
-    textAlignVertical: "top",
+  imagePicker: {
+    width: "100%",
     marginBottom: 20,
   },
-
-  button: {
-    backgroundColor: "#9b4d75",
-    padding: 14,
+  image: {
+    width: "100%",
+    height: 200,
     borderRadius: 12,
   },
-
-  buttonText: {
-    color: "white",
-    textAlign: "center",
-    fontWeight: "600",
+  imagePlaceholder: {
+    width: "100%",
+    height: 120,
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 8,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#9b4d75",
+    borderStyle: "dashed",
+    backgroundColor: "#0a0a12",
+    flexDirection: "row",
+  },
+  imageText: {
+    color: "#55557a",
+    fontSize: 14,
+    fontWeight: "500",
+  },
+  titleInput: {
+    fontSize: 28,
+    fontWeight: "700",
+    color: "#ffffff",
+    marginBottom: 20,
+  },
+  contentInput: {
+    minHeight: 400,
     fontSize: 16,
+    lineHeight: 26,
+    color: "#cccccc",
+    textAlignVertical: "top",
   },
 });

@@ -3,6 +3,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -74,7 +75,20 @@ const signUp = () => {
       }
 
       if (!data.user.confirmed_at) {
-        setSignUpError("Already registered. Confirm your email");
+        Toast.show({
+          type: "success",
+          text1: "Check your email for the verification code",
+          position: "top",
+          visibilityTime: 2000,
+        });
+
+        router.replace({
+          pathname: "/verifyScreen",
+          params: { emailAddress: formData.email, type: "signup" },
+        });
+
+        // setSignUpError("Email already registered. Confirm your email.");
+        reset();
         return;
       }
 
@@ -86,6 +100,10 @@ const signUp = () => {
       });
 
       reset();
+      router.replace({
+        pathname: "/verifyScreen",
+        params: { emailAddress: formData.email, type: "signup" },
+      });
     } catch (err) {
       console.log("CATCH ERROR:", err);
       setSignUpError("Something went wrong. Please try again.");
@@ -99,40 +117,64 @@ const signUp = () => {
         style={styles.keyboardView}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
-        <View style={styles.card}>
-          <Text style={styles.title}>Sign Up</Text>
-          {signUpError && (
-            <Text style={{ color: "#cb5a5a" }}>{signUpError}</Text>
-          )}
+        <ScrollView style={{ flex: 1, marginBottom: 20 }}>
+          <View style={styles.brandSection}>
+            <View style={styles.logoCircle}>
+              <Ionicons name="document-text" size={28} color="#9b4d75" />
+            </View>
+            <Text style={styles.brandName}>NoteApp</Text>
+            <Text style={styles.brandTagline}>Create your account</Text>
+          </View>
 
-          <View style={styles.form}>
-            <Controller
-              control={control}
-              name="email"
-              rules={{
-                required: "Email is required",
-                pattern: {
-                  value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                  message: "Enter a valid email",
-                },
-              }}
-              render={({ field: { onChange, value } }) => (
-                <TextInput
-                  style={styles.input}
-                  placeholder="Enter email"
-                  value={value}
-                  onChangeText={(text) => {
-                    setSignUpError("");
-                    onChange(text);
-                  }}
-                  keyboardType="email-address"
+          <View style={styles.card}>
+            <Text style={styles.title}>Get started</Text>
+
+            {signUpError && (
+              <View style={styles.errorBox}>
+                <Ionicons
+                  name="alert-circle"
+                  size={16}
+                  color="#ff3b5c"
+                  style={{ marginRight: 6 }}
                 />
-              )}
-            />
+                <Text style={styles.errorText}>{signUpError}</Text>
+              </View>
+            )}
 
-            {errors.email && <Text>{errors.email.message}</Text>}
+            <View style={styles.form}>
+              <Controller
+                control={control}
+                name="email"
+                rules={{
+                  required: "Email is required",
+                  pattern: {
+                    value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                    message: "Enter a valid email",
+                  },
+                }}
+                render={({ field: { onChange, value } }) => (
+                  <View>
+                    <Text style={styles.fieldLabel}>Email</Text>
+                    <TextInput
+                      style={[styles.input, errors.email && styles.inputError]}
+                      placeholder="Enter email"
+                      placeholderTextColor="#55557a"
+                      value={value}
+                      onChangeText={(text) => {
+                        setSignUpError("");
+                        onChange(text);
+                      }}
+                      keyboardType="email-address"
+                    />
+                    {errors.email && (
+                      <Text style={styles.fieldError}>
+                        {errors.email.message}
+                      </Text>
+                    )}
+                  </View>
+                )}
+              />
 
-            <View style={styles.passwordContainer}>
               <Controller
                 control={control}
                 name="password"
@@ -144,87 +186,111 @@ const signUp = () => {
                   },
                 }}
                 render={({ field: { onChange, value } }) => (
-                  <TextInput
-                    placeholder="Enter password"
-                    placeholderTextColor="#979595"
-                    secureTextEntry={!showPassword}
-                    value={value}
-                    onChangeText={(text) => {
-                      setSignUpError("");
-                      onChange(text);
-                    }}
-                    style={styles.input}
-                  />
+                  <View>
+                    <Text style={styles.fieldLabel}>Password</Text>
+                    <View
+                      style={[
+                        styles.passwordContainer,
+                        errors.password && styles.inputError,
+                      ]}
+                    >
+                      <TextInput
+                        placeholder="Enter password"
+                        placeholderTextColor="#55557a"
+                        secureTextEntry={!showPassword}
+                        value={value}
+                        onChangeText={(text) => {
+                          setSignUpError("");
+                          onChange(text);
+                        }}
+                        style={styles.passwordInput}
+                      />
+
+                      <Pressable
+                        style={styles.eyeContainer}
+                        onPress={() => setShowPassword((prev) => !prev)}
+                      >
+                        <Ionicons
+                          name={showPassword ? "eye-off" : "eye"}
+                          size={18}
+                          color="#8888bb"
+                        />
+                      </Pressable>
+                    </View>
+                    {errors.password && (
+                      <Text style={styles.fieldError}>
+                        {errors.password.message}
+                      </Text>
+                    )}
+                  </View>
                 )}
               />
 
-              <Pressable
-                style={styles.eyeContainer}
-                onPress={() => setShowPassword((prev) => !prev)}
-              >
-                <Ionicons
-                  name={showPassword ? "eye-off" : "eye"}
-                  size={18}
-                  color="gray"
-                />
-              </Pressable>
-              {errors.password && <Text>{errors.password.message}</Text>}
-            </View>
-
-            <View style={styles.passwordContainer}>
               <Controller
                 control={control}
                 name="confirmPassword"
                 rules={{
                   required: "Confirm password is required",
                   validate: (value) =>
-                    value === watch("password") || "Password do no match",
+                    value === watch("password") || "Passwords do not match",
                 }}
                 render={({ field: { value, onChange } }) => (
-                  <TextInput
-                    placeholder="Confirm password"
-                    placeholderTextColor="#979595"
-                    secureTextEntry={!showConfirmPassword}
-                    value={value}
-                    onChangeText={(text) => {
-                      setSignUpError("");
-                      onChange(text);
-                    }}
-                    style={styles.input}
-                  />
+                  <View>
+                    <Text style={styles.fieldLabel}>Confirm Password</Text>
+                    <View
+                      style={[
+                        styles.passwordContainer,
+                        errors.confirmPassword && styles.inputError,
+                      ]}
+                    >
+                      <TextInput
+                        placeholder="Confirm password"
+                        placeholderTextColor="#55557a"
+                        secureTextEntry={!showConfirmPassword}
+                        value={value}
+                        onChangeText={(text) => {
+                          setSignUpError("");
+                          onChange(text);
+                        }}
+                        style={styles.passwordInput}
+                      />
+                      <Pressable
+                        style={styles.eyeContainer}
+                        onPress={() => setShowConfirmPassword((prev) => !prev)}
+                      >
+                        <Ionicons
+                          name={showConfirmPassword ? "eye-off" : "eye"}
+                          size={18}
+                          color="#8888bb"
+                        />
+                      </Pressable>
+                    </View>
+                    {errors.confirmPassword && (
+                      <Text style={styles.fieldError}>
+                        {errors.confirmPassword.message}
+                      </Text>
+                    )}
+                  </View>
                 )}
               />
-              <Pressable
-                style={styles.eyeContainer}
-                onPress={() => setShowConfirmPassword((prev) => !prev)}
-              >
-                <Ionicons
-                  name={showConfirmPassword ? "eye-off" : "eye"}
-                  size={18}
-                  color="gray"
-                />
-              </Pressable>
 
-              {errors.confirmPassword && (
-                <Text>{errors.confirmPassword.message}</Text>
-              )}
+              <Pressable style={styles.button} onPress={handleSubmit(onSubmit)}>
+                {loading ? (
+                  <ActivityIndicator color="white" />
+                ) : (
+                  <Text style={styles.buttonText}>Create Account</Text>
+                )}
+              </Pressable>
             </View>
 
-            <Pressable style={styles.button} onPress={handleSubmit(onSubmit)}>
-              {loading ? (
-                <ActivityIndicator color="white" />
-              ) : (
-                <Text style={styles.buttonText}>Sign Up</Text>
-              )}
-            </Pressable>
+            <View style={styles.footer}>
+              <Text style={styles.footerText}>Already have an account?</Text>
+              <Pressable onPress={() => router.replace("/signIn")}>
+                <Text style={styles.footerLink}>Sign In</Text>
+              </Pressable>
+            </View>
           </View>
-          <View style={styles.signInContainer}>
-            <Text style={styles.signIn}>Already have an account?</Text>
-            <Pressable onPress={() => router.dismissTo("/signIn")}>
-              <Text style={[styles.singInText, styles.signIn]}>Sign In</Text>
-            </Pressable>
-          </View>
-        </View>
+        </ScrollView>
       </KeyboardAvoidingView>
     </View>
   );
@@ -235,78 +301,168 @@ export default signUp;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#ddaac6",
+    backgroundColor: "#050508",
   },
 
   keyboardView: {
     flex: 1,
-    marginHorizontal: 12,
+    paddingHorizontal: 24,
     justifyContent: "center",
+  },
+
+  brandSection: {
+    alignItems: "center",
+    marginBottom: 32,
+  },
+
+  logoCircle: {
+    width: 64,
+    height: 64,
+    borderRadius: 18,
+    backgroundColor: "#12121e",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: "#2a2a44",
+  },
+
+  brandName: {
+    fontSize: 32,
+    fontWeight: "800",
+    color: "#ffffff",
+    letterSpacing: -0.5,
+    marginBottom: 4,
+  },
+
+  brandTagline: {
+    fontSize: 14,
+    color: "#55557a",
+    letterSpacing: 0.2,
   },
 
   card: {
     width: "100%",
-    maxWidth: 350,
-    padding: 24,
-    borderRadius: 16,
+    maxWidth: 400,
+    alignSelf: "center",
+    backgroundColor: "#0a0a12",
+    borderRadius: 24,
+    padding: 28,
+    borderWidth: 1,
+    borderColor: "#1a1a2e",
   },
 
   title: {
-    fontSize: 26,
+    fontSize: 24,
     fontWeight: "700",
-    textAlign: "center",
+    color: "#ffffff",
     marginBottom: 24,
-    color: "#333",
+    letterSpacing: -0.3,
+  },
+
+  errorBox: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#2d1122",
+    padding: 14,
+    borderRadius: 12,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: "#4d1a33",
+  },
+
+  errorText: {
+    color: "#ff3b5c",
+    fontSize: 14,
+    flex: 1,
   },
 
   form: {
-    gap: 16,
-    marginVertical: 12,
+    gap: 20,
+  },
+
+  fieldLabel: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: "#55557a",
+    marginBottom: 8,
+    textTransform: "uppercase",
+    letterSpacing: 0.8,
   },
 
   input: {
     borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
+    borderColor: "#2a2a44",
+    borderRadius: 14,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
     fontSize: 16,
-    backgroundColor: "#f9f9f9",
+    backgroundColor: "#12121e",
+    color: "#ffffff",
+  },
+
+  inputError: {
+    borderColor: "#ff3b5c",
+  },
+
+  fieldError: {
+    color: "#ff3b5c",
+    fontSize: 13,
+    marginTop: 6,
+  },
+
+  passwordContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#2a2a44",
+    borderRadius: 14,
+    backgroundColor: "#12121e",
+  },
+
+  passwordInput: {
+    flex: 1,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    fontSize: 16,
+    color: "#ffffff",
+  },
+
+  eyeContainer: {
+    paddingHorizontal: 14,
+    paddingVertical: 14,
   },
 
   button: {
     backgroundColor: "#9b4d75",
-    paddingVertical: 14,
-    borderRadius: 10,
+    paddingVertical: 16,
+    borderRadius: 14,
     alignItems: "center",
-    marginTop: 8,
+    marginTop: 12,
   },
 
   buttonText: {
-    color: "#fff",
+    color: "#ffffff",
     fontSize: 16,
     fontWeight: "700",
+    letterSpacing: 0.3,
   },
-  passwordContainer: {
-    position: "relative",
-    width: "100%",
-  },
-  eyeContainer: {
-    position: "absolute",
-    right: 18,
-    top: "60%",
-    transform: [{ translateY: -12 }],
-  },
-  signInContainer: {
+
+  footer: {
     flexDirection: "row",
     justifyContent: "center",
-    gap: 4,
+    gap: 6,
+    marginTop: 28,
   },
-  singInText: {
-    color: "#9b4d75",
-  },
-  signIn: {
-    fontWeight: "400",
+
+  footerText: {
+    color: "#55557a",
     fontSize: 14,
+  },
+
+  footerLink: {
+    color: "#9b4d75",
+    fontSize: 14,
+    fontWeight: "700",
   },
 });
