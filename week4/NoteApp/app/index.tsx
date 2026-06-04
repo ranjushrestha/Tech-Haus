@@ -15,6 +15,7 @@ const Index = () => {
           alignItems: "center",
           backgroundColor: "#050508",
         }}
+        className="bg-red-400"
       >
         <ActivityIndicator size="large" color="#9b4d75" />
       </View>

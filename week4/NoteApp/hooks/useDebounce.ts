@@ -1,5 +1,7 @@
 import { useRef, useCallback, useEffect } from "react";
 
+//data is fetched after typing stops; trailing edge, then function is called after certain delay instead of every key stoke
+
 // useRef => to persist id across render; useRef returns same object ; timerRed.current gives timer id
 // if we used local id it will be set to undefined every render
 // useCallback to memoize function; stop from creating new fumction every render
