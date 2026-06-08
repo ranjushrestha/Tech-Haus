@@ -298,7 +298,7 @@ const styles = StyleSheet.create({
     height: 120,
     justifyContent: "center",
     alignItems: "center",
-    gap: 8,
+    gap: 6,
     borderRadius: 12,
     borderWidth: 1,
     borderColor: "#9b4d75",
