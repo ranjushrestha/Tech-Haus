@@ -13,17 +13,10 @@ type Props = {
   visible: boolean;
   onClose: () => void;
   onConfirm: () => void;
-  noteTitle?: string;
   loading?: boolean;
 };
 
-const DeleteModal = ({
-  visible,
-  onClose,
-  onConfirm,
-  noteTitle,
-  loading,
-}: Props) => {
+const SignOutModal = ({ visible, onClose, onConfirm, loading }: Props) => {
   return (
     <Modal
       animationType="none"
@@ -35,12 +28,11 @@ const DeleteModal = ({
         <View style={styles.overlay}>
           <View style={styles.modal}>
             <View style={styles.iconContainer}>
-              <Ionicons name="trash-outline" size={24} color="#9b4d75" />
+              <Ionicons name="log-out-outline" size={24} color="#9b4d75" />
             </View>
-            <Text style={styles.title}>Delete Note</Text>
+            <Text style={styles.title}>Sign Out</Text>
             <Text style={styles.message}>
-              Are you sure you want to delete
-              {noteTitle ? ` "${noteTitle}"` : " this note"}?
+              Are you sure you want to sign out?
             </Text>
             <View style={styles.actions}>
               <Pressable
@@ -51,14 +43,14 @@ const DeleteModal = ({
                 <Text style={styles.cancelText}>Cancel</Text>
               </Pressable>
               <Pressable
-                style={[styles.deleteButton, loading && { opacity: 0.6 }]}
+                style={[styles.signOutButton, loading && { opacity: 0.6 }]}
                 onPress={onConfirm}
                 disabled={loading}
               >
                 {loading ? (
                   <ActivityIndicator size="small" color="white" />
                 ) : (
-                  <Text style={styles.deleteText}>Delete</Text>
+                  <Text style={styles.signOutText}>Sign Out</Text>
                 )}
               </Pressable>
             </View>
@@ -69,7 +61,7 @@ const DeleteModal = ({
   );
 };
 
-export default DeleteModal;
+export default SignOutModal;
 
 const styles = StyleSheet.create({
   overlay: {
@@ -135,14 +127,14 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#8888bb",
   },
-  deleteButton: {
+  signOutButton: {
     flex: 1,
     paddingVertical: 12,
     borderRadius: 12,
     backgroundColor: "#9b4d75",
     alignItems: "center",
   },
-  deleteText: {
+  signOutText: {
     fontSize: 15,
     fontWeight: "600",
     color: "#ffffff",

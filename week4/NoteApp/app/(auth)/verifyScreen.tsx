@@ -115,22 +115,6 @@ const VerifyScreen = () => {
 
   return (
     <View style={styles.container}>
-      {/* <Pressable
-        style={{
-          width: 38,
-          height: 38,
-          borderRadius: 12,
-          justifyContent: "center",
-          alignItems: "center",
-          backgroundColor: "#12121e",
-          borderWidth: 1,
-          borderColor: "#1a1a2e",
-        }}
-        onPress={() => router.replace("/signIn")}
-      >
-        <Ionicons name="chevron-back" size={22} color="#ffffff" />
-      </Pressable> */}
-
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{
@@ -190,7 +174,7 @@ const VerifyScreen = () => {
             ]}
           >
             {loading ? (
-              <ActivityIndicator color="#fff" />
+              <ActivityIndicator color="#9b4d75" />
             ) : (
               <Text style={styles.buttonText}>Verify</Text>
             )}
