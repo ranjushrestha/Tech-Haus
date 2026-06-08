@@ -9,7 +9,6 @@ import {
   View,
 } from "react-native";
 import React, { useState } from "react";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { supabase } from "@/lib/supabase";
@@ -201,6 +200,17 @@ const SignIn = () => {
             </Pressable>
           </View>
 
+          <View style={styles.dividerRow}>
+            <View style={styles.dividerLine} />
+            <Text style={styles.dividerText}>OR</Text>
+            <View style={styles.dividerLine} />
+          </View>
+
+          <Pressable style={styles.googleButton}>
+            <Ionicons name="logo-google" size={20} color="#9b4d75" />
+            <Text style={styles.googleButtonText}>Sign in with Google</Text>
+          </Pressable>
+
           <View style={styles.footer}>
             <Text style={styles.footerText}>Don't have an account?</Text>
             <Pressable onPress={() => router.push("/signUp")}>
@@ -229,7 +239,7 @@ const styles = StyleSheet.create({
 
   brandSection: {
     alignItems: "center",
-    marginBottom: 40,
+    marginBottom: 12,
   },
 
   logoCircle: {
@@ -367,6 +377,45 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "700",
     letterSpacing: 0.3,
+  },
+
+  dividerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 24,
+    marginBottom: 16,
+  },
+
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: "#2a2a44",
+  },
+
+  dividerText: {
+    color: "#55557a",
+    fontSize: 12,
+    marginHorizontal: 8,
+    fontWeight: "600",
+    textTransform: "uppercase",
+    letterSpacing: 0.6,
+  },
+
+  googleButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 0.6,
+    paddingVertical: 12,
+    borderRadius: 14,
+    borderColor: "#9b4d75",
+    gap: 10,
+  },
+
+  googleButtonText: {
+    color: "#9b4d75",
+    fontSize: 16,
+    fontWeight: "600",
   },
 
   footer: {

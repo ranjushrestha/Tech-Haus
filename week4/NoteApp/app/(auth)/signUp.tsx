@@ -285,7 +285,7 @@ const signUp = () => {
 
             <View style={styles.footer}>
               <Text style={styles.footerText}>Already have an account?</Text>
-              <Pressable onPress={() => router.replace("/signIn")}>
+              <Pressable onPress={() => router.dismissTo("/signIn")}>
                 <Text style={styles.footerLink}>Sign In</Text>
               </Pressable>
             </View>
@@ -312,7 +312,7 @@ const styles = StyleSheet.create({
 
   brandSection: {
     alignItems: "center",
-    marginBottom: 32,
+    marginBottom: 12,
   },
 
   logoCircle: {
