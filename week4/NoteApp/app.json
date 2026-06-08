@@ -12,7 +12,8 @@
     },
     "android": {
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.notes.app.ranju"
     },
     "web": {
       "output": "static"

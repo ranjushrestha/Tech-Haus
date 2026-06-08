@@ -6,6 +6,9 @@ import { useStore } from "@/store/useStore";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 import { StatusBar } from "expo-status-bar";
+import { configureGoogleSignIn } from "@/lib/googleSignin";
+
+configureGoogleSignIn();
 
 export default function RootLayout() {
   const { authLoading, setAuthLoading, setUserData } = useStore();
@@ -23,23 +26,29 @@ export default function RootLayout() {
         return;
       }
 
-      setUserData(user ?? null);
+      setUserData(user);
       setAuthLoading(false);
     };
 
     initializeAuth();
 
-    //runs everytime when signin signout or token changes
+    // runs every time when signin, signout, or token changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       console.log("EVENT:", _event);
       console.log("auth changed user:", session?.user ?? null);
 
-      initializeAuth();
+      if (session?.user) {
+        setUserData(session.user);
+      } else {
+        setUserData(null);
+      }
+
+      setAuthLoading(false);
     });
 
-    //clean up
+    // clean up
     return () => subscription.unsubscribe();
   }, []);
 
@@ -51,7 +60,6 @@ export default function RootLayout() {
           justifyContent: "center",
           alignItems: "center",
         }}
-        // className="flex flex-1 justify-center items-center"
       >
         <ActivityIndicator size="large" color="#a12867" />
       </View>
@@ -63,7 +71,12 @@ export default function RootLayout() {
       <SafeAreaView style={{ flex: 1, backgroundColor: "#050508" }}>
         <StatusBar style="light" />
 
-        <Stack screenOptions={{ headerShown: false }} />
+        <Stack
+          screenOptions={{
+            headerShown: false,
+            contentStyle: { backgroundColor: "#050508" },
+          }}
+        />
         <Toast swipeable={true} />
       </SafeAreaView>
     </SafeAreaProvider>

@@ -117,7 +117,27 @@ const signUp = () => {
         style={styles.keyboardView}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
-        <ScrollView style={{ flex: 1, marginBottom: 20 }}>
+        <ScrollView
+          style={{ flex: 1, marginBottom: 20 }}
+          showsVerticalScrollIndicator={false}
+        >
+          <View>
+            <Pressable
+              style={{
+                width: 38,
+                height: 38,
+                borderRadius: 12,
+                justifyContent: "center",
+                alignItems: "center",
+                backgroundColor: "#12121e",
+                borderWidth: 1,
+                borderColor: "#2a2a44",
+              }}
+              onPress={() => router.back()}
+            >
+              <Ionicons name="chevron-back" color="#fff" size={20} />
+            </Pressable>
+          </View>
           <View style={styles.brandSection}>
             <View style={styles.logoCircle}>
               <Ionicons name="document-text" size={28} color="#9b4d75" />
@@ -274,7 +294,10 @@ const signUp = () => {
                 )}
               />
 
-              <Pressable style={styles.button} onPress={handleSubmit(onSubmit)}>
+              <Pressable
+                style={[styles.button, loading && { opacity: 0.6 }]}
+                onPress={handleSubmit(onSubmit)}
+              >
                 {loading ? (
                   <ActivityIndicator color="white" />
                 ) : (
@@ -283,12 +306,12 @@ const signUp = () => {
               </Pressable>
             </View>
 
-            <View style={styles.footer}>
+            {/* <View style={styles.footer}>
               <Text style={styles.footerText}>Already have an account?</Text>
-              <Pressable onPress={() => router.dismissTo("/signIn")}>
+              <Pressable onPress={() => router.push("/signIn")}>
                 <Text style={styles.footerLink}>Sign In</Text>
               </Pressable>
-            </View>
+            </View> */}
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -306,7 +329,8 @@ const styles = StyleSheet.create({
 
   keyboardView: {
     flex: 1,
-    paddingHorizontal: 24,
+    paddingHorizontal: 20,
+    paddingVertical: 4,
     justifyContent: "center",
   },
 

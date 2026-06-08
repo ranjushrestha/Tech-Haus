@@ -17,12 +17,14 @@ import { supabase } from "@/lib/supabase";
 import { Ionicons } from "@expo/vector-icons";
 import NoteBox from "@/components/NoteBox";
 import DeleteModal from "@/components/DeleteModal";
+import SignOutModal from "@/components/SignOutModal";
 import { useStore } from "@/store/useStore";
 import { SafeAreaView } from "react-native-safe-area-context";
 import EmptyState from "@/components/EmptyState";
 import { deleteNote } from "@/lib/deleteNote";
 import Toast from "react-native-toast-message";
 import { useDebounce } from "@/hooks/useDebounce";
+import { signOutFromGoogle } from "@/lib/googleSignin";
 
 type Note = {
   id: string;
@@ -42,6 +44,8 @@ const Index = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [refreshing, setRefreshing] = useState(false);
   const [inputText, setInputText] = useState("");
+  const [signOutModalVisible, setSignOutModalVisible] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
 
   const { user } = useStore();
 
@@ -155,13 +159,18 @@ const Index = () => {
   };
 
   const handleSignOut = async () => {
-    const { error } = await supabase.auth.signOut();
+    setSigningOut(true);
+    const { error } = await signOutFromGoogle();
 
     if (error) {
       console.log("Sign out error:", error.message);
+      setSigningOut(false);
+      setSignOutModalVisible(false);
       return;
     }
 
+    setSigningOut(false);
+    setSignOutModalVisible(false);
     router.replace("/signIn");
   };
 
@@ -216,6 +225,16 @@ const Index = () => {
 
   return (
     <View style={styles.container}>
+      <SignOutModal
+        visible={signOutModalVisible}
+        onClose={() => {
+          setSignOutModalVisible(false);
+          setSigningOut(false);
+        }}
+        onConfirm={handleSignOut}
+        loading={signingOut}
+      />
+
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerLeft}>
@@ -224,7 +243,10 @@ const Index = () => {
             {notes.length} {notes.length === 1 ? "note" : "notes"} total
           </Text>
         </View>
-        <Pressable style={styles.signOutButton} onPress={handleSignOut}>
+        <Pressable
+          style={styles.signOutButton}
+          onPress={() => setSignOutModalVisible(true)}
+        >
           <Ionicons name="log-out-outline" size={20} color="#ffffff" />
         </Pressable>
       </View>

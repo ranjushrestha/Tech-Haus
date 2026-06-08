@@ -3,6 +3,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -14,6 +15,7 @@ import { router } from "expo-router";
 import { supabase } from "@/lib/supabase";
 import { Controller, useForm } from "react-hook-form";
 import { useStore } from "@/store/useStore";
+import { GoogleSignInButton } from "@/components/GoogleSigninButton";
 
 type FormData = {
   email: string;
@@ -84,140 +86,142 @@ const SignIn = () => {
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={styles.keyboardView}
       >
-        <View style={styles.brandSection}>
-          <View style={styles.logoCircle}>
-            <Ionicons name="document-text" size={28} color="#9b4d75" />
-          </View>
-          <Text style={styles.brandName}>NoteApp</Text>
-          <Text style={styles.brandTagline}>Your thoughts, organized</Text>
-        </View>
-
-        <View style={styles.card}>
-          <Text style={styles.title}>Welcome back</Text>
-
-          {authError ? (
-            <View style={styles.errorBox}>
-              <Ionicons
-                name="alert-circle"
-                size={16}
-                color="#ff3b5c"
-                style={{ marginRight: 6 }}
-              />
-              <Text style={styles.errorText}>{authError}</Text>
+        <ScrollView
+          style={{ flex: 1, marginBottom: 20 }}
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.brandSection}>
+            <View style={styles.logoCircle}>
+              <Ionicons name="document-text" size={28} color="#9b4d75" />
             </View>
-          ) : null}
+            <Text style={styles.brandName}>NoteApp</Text>
+            <Text style={styles.brandTagline}>Your thoughts, organized</Text>
+          </View>
 
-          <View style={styles.form}>
-            <Controller
-              control={control}
-              name="email"
-              rules={{
-                required: "Email required",
-                pattern: {
-                  value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                  message: "Enter a valid email",
-                },
-              }}
-              render={({ field: { value, onChange, onBlur } }) => (
-                <View>
-                  <Text style={styles.fieldLabel}>Email</Text>
-                  <TextInput
-                    placeholder="Enter your email"
-                    placeholderTextColor="#55557a"
-                    value={value}
-                    onChangeText={onChange}
-                    onBlur={onBlur}
-                    keyboardType="email-address"
-                    autoCapitalize="none"
-                    style={[styles.input, errors.email && styles.inputError]}
-                  />
-                  {errors.email && (
-                    <Text style={styles.fieldError}>
-                      {errors.email.message}
-                    </Text>
-                  )}
-                </View>
-              )}
-            />
+          <View style={styles.card}>
+            <Text style={styles.title}>Welcome back</Text>
 
-            <Controller
-              control={control}
-              name="password"
-              rules={{
-                required: "Password required",
-              }}
-              render={({ field: { value, onChange } }) => (
-                <View>
-                  <Text style={styles.fieldLabel}>Password</Text>
-                  <View
-                    style={[
-                      styles.passwordContainer,
-                      errors.password && styles.inputError,
-                    ]}
-                  >
+            {authError ? (
+              <View style={styles.errorBox}>
+                <Ionicons
+                  name="alert-circle"
+                  size={16}
+                  color="#ff3b5c"
+                  style={{ marginRight: 6 }}
+                />
+                <Text style={styles.errorText}>{authError}</Text>
+              </View>
+            ) : null}
+
+            <View style={styles.form}>
+              <Controller
+                control={control}
+                name="email"
+                rules={{
+                  required: "Email required",
+                  pattern: {
+                    value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                    message: "Enter a valid email",
+                  },
+                }}
+                render={({ field: { value, onChange, onBlur } }) => (
+                  <View>
+                    <Text style={styles.fieldLabel}>Email</Text>
                     <TextInput
-                      placeholder="Enter your password"
+                      placeholder="Enter your email"
                       placeholderTextColor="#55557a"
-                      secureTextEntry={!showPassword}
                       value={value}
-                      onChangeText={(text) => {
-                        setAuthError("");
-                        onChange(text);
-                      }}
-                      style={styles.passwordInput}
+                      onChangeText={onChange}
+                      onBlur={onBlur}
+                      keyboardType="email-address"
+                      autoCapitalize="none"
+                      style={[styles.input, errors.email && styles.inputError]}
                     />
-
-                    <Pressable
-                      style={styles.eyeContainer}
-                      onPress={() => setShowPassword((prev) => !prev)}
-                    >
-                      <Ionicons
-                        name={showPassword ? "eye-off" : "eye"}
-                        size={18}
-                        color="#8888bb"
-                      />
-                    </Pressable>
+                    {errors.email && (
+                      <Text style={styles.fieldError}>
+                        {errors.email.message}
+                      </Text>
+                    )}
                   </View>
-                  {errors.password && (
-                    <Text style={styles.fieldError}>
-                      {errors.password.message}
-                    </Text>
-                  )}
-                </View>
-              )}
-            />
+                )}
+              />
 
-            <Pressable
-              style={[styles.button, loading && styles.buttonDisabled]}
-              onPress={handleSubmit(onSubmit)}
-              disabled={loading}
-            >
-              {loading ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <Text style={styles.buttonText}>Sign In</Text>
-              )}
-            </Pressable>
+              <Controller
+                control={control}
+                name="password"
+                rules={{
+                  required: "Password required",
+                }}
+                render={({ field: { value, onChange } }) => (
+                  <View>
+                    <Text style={styles.fieldLabel}>Password</Text>
+                    <View
+                      style={[
+                        styles.passwordContainer,
+                        errors.password && styles.inputError,
+                      ]}
+                    >
+                      <TextInput
+                        placeholder="Enter your password"
+                        placeholderTextColor="#55557a"
+                        secureTextEntry={!showPassword}
+                        value={value}
+                        onChangeText={(text) => {
+                          setAuthError("");
+                          onChange(text);
+                        }}
+                        style={styles.passwordInput}
+                      />
+
+                      <Pressable
+                        style={styles.eyeContainer}
+                        onPress={() => setShowPassword((prev) => !prev)}
+                      >
+                        <Ionicons
+                          name={showPassword ? "eye-off" : "eye"}
+                          size={18}
+                          color="#8888bb"
+                        />
+                      </Pressable>
+                    </View>
+                    {errors.password && (
+                      <Text style={styles.fieldError}>
+                        {errors.password.message}
+                      </Text>
+                    )}
+                  </View>
+                )}
+              />
+
+              <Pressable
+                style={[styles.button, loading && styles.buttonDisabled]}
+                onPress={handleSubmit(onSubmit)}
+                disabled={loading}
+              >
+                {loading ? (
+                  <ActivityIndicator color="#fff" />
+                ) : (
+                  <Text style={styles.buttonText}>Sign In</Text>
+                )}
+              </Pressable>
+            </View>
+
+            <View style={styles.dividerRow}>
+              <View style={styles.dividerLine} />
+              <Text style={styles.dividerText}>OR</Text>
+              <View style={styles.dividerLine} />
+            </View>
+
+            <GoogleSignInButton />
+
+            <View style={styles.footer}>
+              <Text style={styles.footerText}>Don't have an account?</Text>
+              <Pressable onPress={() => router.push("/signUp")}>
+                <Text style={styles.footerLink}>Register Now!</Text>
+              </Pressable>
+            </View>
           </View>
-
-          <View style={styles.dividerRow}>
-            <View style={styles.dividerLine} />
-            <Text style={styles.dividerText}>OR</Text>
-            <View style={styles.dividerLine} />
-          </View>
-
-          <Pressable style={styles.googleButton}>
-            <Ionicons name="logo-google" size={20} color="#9b4d75" />
-            <Text style={styles.googleButtonText}>Sign in with Google</Text>
-          </Pressable>
-
-          <View style={styles.footer}>
-            <Text style={styles.footerText}>Don't have an account?</Text>
-            <Pressable onPress={() => router.push("/signUp")}>
-              <Text style={styles.footerLink}>Register Now!</Text>
-            </Pressable>
-          </View>
-        </View>
+        </ScrollView>
       </KeyboardAvoidingView>
     </View>
   );
@@ -233,7 +237,8 @@ const styles = StyleSheet.create({
 
   keyboardView: {
     flex: 1,
-    paddingHorizontal: 24,
+    paddingHorizontal: 20,
+    paddingVertical: 4,
     justifyContent: "center",
   },
 
