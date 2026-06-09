@@ -11,7 +11,7 @@ import {
   TextInput,
   View,
 } from "react-native";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { router, useFocusEffect } from "expo-router";
 import { supabase } from "@/lib/supabase";
 import { Ionicons } from "@expo/vector-icons";
@@ -24,7 +24,7 @@ import EmptyState from "@/components/EmptyState";
 import { deleteNote } from "@/lib/deleteNote";
 import Toast from "react-native-toast-message";
 import { useDebounce } from "@/hooks/useDebounce";
-import { signOutFromGoogle } from "@/lib/googleSignin";
+import { signInWithGoogle, signOutFromGoogle } from "@/lib/googleSignin";
 
 type Note = {
   id: string;
@@ -46,6 +46,7 @@ const Index = () => {
   const [inputText, setInputText] = useState("");
   const [signOutModalVisible, setSignOutModalVisible] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
+  const [userName, setUserName] = useState("");
 
   const { user } = useStore();
 
@@ -113,6 +114,7 @@ const Index = () => {
   // };
 
   // Delete note and its image from storage
+
   const handleDelete = async (item: Note) => {
     setDeleting(true);
 
@@ -173,6 +175,18 @@ const Index = () => {
     setSignOutModalVisible(false);
     router.replace("/signIn");
   };
+
+  //Get user name for signed in with Google
+  useEffect(() => {
+    if (!user) return;
+    const provider = user.app_metadata.provider;
+    if (provider === "google") {
+      setUserName(user.user_metadata?.full_name ?? "");
+    } else if (provider === "email") {
+      console.log("Email name:", user?.email);
+      setUserName(user?.email ?? "");
+    }
+  }, [user]);
 
   const renderItem = ({ item }: { item: Note }) => {
     return (
@@ -243,12 +257,25 @@ const Index = () => {
             {notes.length} {notes.length === 1 ? "note" : "notes"} total
           </Text>
         </View>
-        <Pressable
-          style={styles.signOutButton}
-          onPress={() => setSignOutModalVisible(true)}
+
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "center",
+            alignItems: "center",
+            gap: 8,
+          }}
         >
-          <Ionicons name="log-out-outline" size={20} color="#ffffff" />
-        </Pressable>
+          <Text style={{ color: "#9b4d75", fontSize: 20, fontWeight: "bold" }}>
+            {userName.split(" ")[0] || ""}
+          </Text>
+          <Pressable
+            style={styles.signOutButton}
+            onPress={() => setSignOutModalVisible(true)}
+          >
+            <Ionicons name="log-out-outline" size={20} color="#ffffff" />
+          </Pressable>
+        </View>
       </View>
 
       {/* Search bar */}

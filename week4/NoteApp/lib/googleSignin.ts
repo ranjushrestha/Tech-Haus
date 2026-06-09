@@ -37,6 +37,8 @@ export async function signInWithGoogle() {
     });
 
     console.log("GOOGLE DATA:", data);
+    console.log("GOOGLE Name:", data.user?.user_metadata.name);
+
     console.log("GOOGLE ERROR:", error);
 
     if (error) throw error;
