@@ -18,8 +18,9 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as ImagePicker from "expo-image-picker";
 import Toast from "react-native-toast-message";
-import DeleteModal from "@/components/DeleteModal";
+import DeleteModal from "@/components/ConfirmDialogue";
 import { deleteNote } from "@/lib/deleteNote";
+import ConfirmDialogue from "@/components/ConfirmDialogue";
 
 type Note = {
   title: string;
@@ -413,7 +414,10 @@ export default function NoteDetail() {
         )}
       </KeyboardAvoidingView>
 
-      <DeleteModal
+      <ConfirmDialogue
+        confirmTitle="Delete"
+        description="Are you sure you want to delete"
+        confrimText="Delete"
         visible={showModal}
         onClose={() => setShowModal(false)}
         onConfirm={() => handleDelete(id)}

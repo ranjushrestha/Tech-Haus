@@ -16,15 +16,14 @@ import { router, useFocusEffect } from "expo-router";
 import { supabase } from "@/lib/supabase";
 import { Ionicons } from "@expo/vector-icons";
 import NoteBox from "@/components/NoteBox";
-import DeleteModal from "@/components/DeleteModal";
-import SignOutModal from "@/components/SignOutModal";
+import ConfirmDialogue from "@/components/ConfirmDialogue";
 import { useStore } from "@/store/useStore";
 import { SafeAreaView } from "react-native-safe-area-context";
 import EmptyState from "@/components/EmptyState";
 import { deleteNote } from "@/lib/deleteNote";
 import Toast from "react-native-toast-message";
 import { useDebounce } from "@/hooks/useDebounce";
-import { signInWithGoogle, signOutFromGoogle } from "@/lib/googleSignin";
+import { signOutFromGoogle } from "@/lib/googleSignin";
 
 type Note = {
   id: string;
@@ -176,7 +175,7 @@ const Index = () => {
     router.replace("/signIn");
   };
 
-  //Get user name for signed in with Google
+  //Get user name
   useEffect(() => {
     if (!user) return;
     const provider = user.app_metadata.provider;
@@ -184,7 +183,7 @@ const Index = () => {
       setUserName(user.user_metadata?.full_name ?? "");
     } else if (provider === "email") {
       console.log("Email name:", user?.email);
-      setUserName(user?.email ?? "");
+      setUserName(user?.email?.split("@")[0] ?? "");
     }
   }, [user]);
 
@@ -194,7 +193,14 @@ const Index = () => {
         <View style={styles.cardContent}>
           <NoteBox item={item} />
 
-          <DeleteModal
+          <ConfirmDialogue
+            confirmTitle="Delete"
+            description={
+              item.title
+                ? "Are you sure you want to delete"
+                : "Are you sure you want to delete this note?"
+            }
+            confrimText="Delete"
             visible={deletingNote?.id === item.id}
             onClose={() => {
               setDeletingNote(null);
@@ -239,7 +245,10 @@ const Index = () => {
 
   return (
     <View style={styles.container}>
-      <SignOutModal
+      <ConfirmDialogue
+        confirmTitle="Sign Out"
+        confrimText="Sign Out"
+        description=" Are you sure you want to sign out?"
         visible={signOutModalVisible}
         onClose={() => {
           setSignOutModalVisible(false);

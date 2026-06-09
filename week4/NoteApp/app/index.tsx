@@ -5,6 +5,8 @@ const Index = () => {
   const user = useStore((state) => state.user);
   const authLoading = useStore((state) => state.authLoading);
 
+  if (authLoading) return null;
+
   if (user) {
     return <Redirect href="/list" />;
   }
