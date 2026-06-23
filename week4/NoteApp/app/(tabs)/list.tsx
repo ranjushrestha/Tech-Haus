@@ -6,6 +6,7 @@ import {
   Platform,
   Pressable,
   RefreshControl,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -23,7 +24,7 @@ import EmptyState from "@/components/EmptyState";
 import { deleteNote } from "@/lib/deleteNote";
 import Toast from "react-native-toast-message";
 import { useDebounce } from "@/hooks/useDebounce";
-import { signOutFromGoogle } from "@/lib/googleSignin";
+import { signOutFunc } from "@/lib/googleSignin";
 
 type Note = {
   id: string;
@@ -47,7 +48,10 @@ const Index = () => {
   const [signingOut, setSigningOut] = useState(false);
   const [userName, setUserName] = useState("");
 
-  const { user } = useStore();
+  const [category, setCategory] = useState("all");
+  const [createCategory, setreateCategory] = useState("");
+
+  const user = useStore((state) => state.user);
 
   // Fetch all notes for the logged-in user, ordered newest first
   const fetchNotes = useCallback(async () => {
@@ -90,9 +94,29 @@ const Index = () => {
   }, []);
 
   // Filter notes by search term (title only)
-  const filteredNotes = notes.filter((note) =>
-    note.title.toLowerCase().includes(searchTerm.toLowerCase()),
-  );
+  // const filteredNotes = notes.filter((note) =>
+  //   note.title.toLowerCase().includes(searchTerm.toLowerCase()),
+  // );
+
+  const categories = ["all", "random"];
+
+  const filteredNotes = [...notes].filter((note) => {
+    const matchesSearch = note.title
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
+    if (category === "all") return matchesSearch;
+    if (category === "random") {
+      const randomIds = new Set(
+        [...notes]
+          .sort(() => Math.random() - 0.5)
+          .slice(0, 5)
+          .map((n) => n.id),
+      );
+
+      return matchesSearch && randomIds.has(note.id);
+    }
+    return matchesSearch;
+  });
 
   const debounceSearch = useDebounce(
     useCallback((text: string) => {
@@ -105,28 +129,11 @@ const Index = () => {
     setInputText(text);
     debounceSearch(text);
   };
-  // const getPathFromUrl = (url: string | null) => {
-  //   if (!url) return null;
-
-  //   const path = url.split("/note-images/");
-  //   return path.length > 1 ? path[1] : null;
-  // };
 
   // Delete note and its image from storage
 
   const handleDelete = async (item: Note) => {
     setDeleting(true);
-
-    // const oldPath = getPathFromUrl(item.image_url || null);
-    // if (oldPath) {
-    //   const { error: deleteError } = await supabase.storage
-    //     .from("note-images")
-    //     .remove([oldPath]);
-
-    //   if (deleteError) {
-    //     console.log("Error deleting image in note list:", deleteError.message);
-    //   }
-    // }
 
     const result = await deleteNote(item.id, item.image_url);
 
@@ -161,10 +168,14 @@ const Index = () => {
 
   const handleSignOut = async () => {
     setSigningOut(true);
-    const { error } = await signOutFromGoogle();
+    const { error } = await signOutFunc();
 
     if (error) {
       console.log("Sign out error:", error.message);
+      Toast.show({
+        type: "error",
+        text1: "Error logging out",
+      });
       setSigningOut(false);
       setSignOutModalVisible(false);
       return;
@@ -288,10 +299,7 @@ const Index = () => {
       </View>
 
       {/* Search bar */}
-      {/* <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={{ flex: 1 }}
-      > */}
+
       <View style={styles.searchBar}>
         <Ionicons name="search" size={16} color="#55557a" />
         <TextInput
@@ -303,7 +311,10 @@ const Index = () => {
         />
         {searchTerm.length > 0 && (
           <Pressable
-            onPress={() => setSearchTerm("")}
+            onPress={() => {
+              setSearchTerm("");
+              setInputText("");
+            }}
             style={styles.clearButton}
           >
             <Ionicons name="close-circle" size={18} color="#55557a" />
@@ -311,8 +322,50 @@ const Index = () => {
         )}
       </View>
 
+      {/* Category filter */}
+      <View style={styles.categoryContainer}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.categoryScroll}
+        >
+          {categories.map((cat) => {
+            const isActive = category === cat;
+            const icon =
+              cat === "all"
+                ? "grid-outline"
+                : cat === "random"
+                  ? "shuffle-outline"
+                  : "create";
+            return (
+              <Pressable
+                key={cat}
+                style={[
+                  styles.categoryPill,
+                  isActive && styles.categoryPillActive,
+                ]}
+                onPress={() => setCategory(cat)}
+              >
+                <Ionicons
+                  name={icon}
+                  size={14}
+                  color={isActive ? "#ffffff" : "#8888bb"}
+                />
+                <Text
+                  style={[
+                    styles.categoryText,
+                    isActive && styles.categoryTextActive,
+                  ]}
+                >
+                  {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </ScrollView>
+      </View>
+
       <FlatList
-        // style={{ flex: 1 }}
         data={filteredNotes}
         keyExtractor={(item) => item.id}
         showsVerticalScrollIndicator={false}
@@ -356,7 +409,6 @@ const Index = () => {
         }
         renderItem={renderItem}
       />
-      {/* </KeyboardAvoidingView> */}
 
       {/* Floating create button */}
       <Pressable
@@ -424,6 +476,36 @@ const styles = StyleSheet.create({
     color: "#55557a",
     marginTop: 2,
     fontWeight: "500",
+  },
+  categoryContainer: {
+    marginBottom: 16,
+  },
+  categoryScroll: {
+    flexDirection: "row",
+    gap: 8,
+  },
+  categoryPill: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: "#12121e",
+    borderWidth: 1,
+    borderColor: "#2a2a44",
+  },
+  categoryPillActive: {
+    backgroundColor: "#9b4d75",
+    borderColor: "#9b4d75",
+  },
+  categoryText: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: "#8888bb",
+  },
+  categoryTextActive: {
+    color: "#ffffff",
   },
   searchBar: {
     flexDirection: "row",

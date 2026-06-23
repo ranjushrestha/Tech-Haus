@@ -1,4 +1,3 @@
-import * as FileSystem from "expo-file-system/legacy";
 import { supabase } from "@/lib/supabase";
 import { Ionicons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
@@ -18,9 +17,10 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as ImagePicker from "expo-image-picker";
 import Toast from "react-native-toast-message";
-import DeleteModal from "@/components/ConfirmDialogue";
 import { deleteNote } from "@/lib/deleteNote";
 import ConfirmDialogue from "@/components/ConfirmDialogue";
+import { uploadImage } from "@/lib/uploadImage";
+import { useStore } from "@/store/useStore";
 
 type Note = {
   title: string;
@@ -49,6 +49,8 @@ export default function NoteDetail() {
 
   const [showModal, setShowModal] = useState(false);
   const [deleting, setDeleting] = useState(false);
+
+  const user = useStore((state) => state.user);
 
   useEffect(() => {
     fetchSingleNote();
@@ -98,18 +100,6 @@ export default function NoteDetail() {
   const handleDelete = async (id: string) => {
     setDeleting(true);
 
-    // const oldPath = getPathFromUrl(imageUrl);
-    // if (oldPath) {
-    //   const { error: deleteError } = await supabase.storage
-    //     .from("note-images")
-    //     .remove([oldPath]);
-
-    //   if (deleteError) {
-    //     console.log("Error deleting image:", deleteError.message);
-    //   }
-    // }
-
-    // delete note and image from deleteNote
     const result = await deleteNote(id, imageUrl);
 
     if (!result.success) {
@@ -151,77 +141,16 @@ export default function NoteDetail() {
     }
   };
 
-  //get file path helper function
-  const getPathFromUrl = (url: string | null) => {
-    if (!url) return null;
-
-    const path = url.split("/note-images/");
-    return path.length > 1 ? path[1] : null;
-  };
-
-  const uploadImage = async (imageUri: string) => {
-    try {
-      // Delete old url before uploading new one because Date.now create new filepath everytime
-
-      const oldPath = getPathFromUrl(imageUrl);
-      if (oldPath) {
-        const { error: deleteError } = await supabase.storage
-          .from("note-images")
-          .remove([oldPath]);
-
-        if (deleteError) {
-          console.log("Failed to delete old image:", deleteError.message);
-        } else {
-          console.log("Old image deleted successfully from storage");
-        }
-      }
-
-      //fileSystem => app's storage manager; readAsStringAsync => file reader tool
-      const base64 = await FileSystem.readAsStringAsync(imageUri, {
-        encoding: "base64", //
-      });
-
-      // Decodes a Base64 string into a raw Uint8Array byte array
-      const binaryStr = atob(base64);
-      const bytes = new Uint8Array(binaryStr.length);
-      for (let i = 0; i < binaryStr.length; i++) {
-        bytes[i] = binaryStr.charCodeAt(i);
-      }
-
-      const filePath = `edit/${Date.now()}.jpg`;
-
-      const { data, error } = await supabase.storage
-        .from("note-images")
-        .upload(filePath, bytes.buffer, {
-          contentType: `image/jpg`,
-          upsert: false,
-        });
-
-      if (error) {
-        console.log("Upload error:", error.message);
-        return null;
-      }
-
-      const { data: publicData } = supabase.storage
-        .from("note-images")
-        .getPublicUrl(data.path);
-
-      return publicData.publicUrl;
-    } catch (error) {
-      console.log("Upload catch error:", error);
-      return null;
-    }
-  };
-
   const handleUpdate = async () => {
     if (!id) return;
+    if (!user) return;
 
     setSaving(true);
     setError(null);
 
     let newImageUrl = imageUrl;
     if (editImage) {
-      newImageUrl = await uploadImage(editImage);
+      newImageUrl = await uploadImage(user.id, editImage, imageUrl);
     }
 
     const { error } = await supabase

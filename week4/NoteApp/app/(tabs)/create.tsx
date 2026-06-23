@@ -16,8 +16,8 @@ import {
 import Toast from "react-native-toast-message";
 import { Ionicons } from "@expo/vector-icons";
 import { useStore } from "@/store/useStore";
-import * as FileSystem from "expo-file-system/legacy";
 import * as ImagePicker from "expo-image-picker";
+import { uploadImage } from "@/lib/uploadImage";
 
 const CreateNote = () => {
   const [title, setTitle] = useState("");
@@ -26,6 +26,7 @@ const CreateNote = () => {
   const [saving, setSaving] = useState(false);
 
   const user = useStore((state) => state.user);
+  const selectedFolder = useStore((state) => state.selectedFolder);
 
   // Step 1: Ask for permission to access the photo libraryr
   const requestPermissions = async () => {
@@ -55,51 +56,6 @@ const CreateNote = () => {
     if (!result.canceled) {
       // This is a local file URI like: file:///var/mobile/.../photo.jpg
       setImage(result.assets[0].uri);
-    }
-  };
-
-  // Step 3: Upload image to Supabase Storage, return the public URL
-  const uploadImage = async (userId: string, imageUri: string) => {
-    try {
-      // Read the local file as a base64 string (React Native safe approach)
-      const base64 = await FileSystem.readAsStringAsync(imageUri, {
-        encoding: "base64",
-      });
-
-      // This is required because FormData/Blob don't work properly in React Native
-      // atob converts base64 to binary string eg: SGVsbG8gV29ybGQ to "Hello World" single byte
-      // then charCodeAt converts return integer from Unicode code 8 bit then
-      //into a raw Uint8Array byte array
-      const binaryStr = atob(base64);
-      const bytes = new Uint8Array(binaryStr.length);
-      for (let i = 0; i < binaryStr.length; i++) {
-        bytes[i] = binaryStr.charCodeAt(i);
-      }
-
-      // File path inside the bucket: userId/timestamp.jpg
-      const filePath = `${userId}/${Date.now()}.jpg`;
-
-      const { data, error } = await supabase.storage
-        .from("note-images")
-        .upload(filePath, bytes.buffer, {
-          contentType: `image/jpg`,
-          upsert: false, //if filePath already exist do not overwrite
-        });
-
-      if (error) {
-        console.log("Upload error:", error.message);
-        return null;
-      }
-
-      // Get the permanent public URL for the uploaded file
-      const { data: publicData } = supabase.storage
-        .from("note-images")
-        .getPublicUrl(data.path);
-
-      return publicData.publicUrl;
-    } catch (error) {
-      console.log("Upload catch error:", error);
-      return null;
     }
   };
 
@@ -180,7 +136,17 @@ const CreateNote = () => {
         </Pressable>
 
         <Text style={styles.heading}>New Note</Text>
-
+        {/* <Pressable
+          style={styles.folderButton}
+          onPress={() => router.push("/(tabs)/folder")}
+        >
+          <Ionicons name="folder" color={selectedFolder ? "#9b4d75" : "#fff"} size={18} />
+          {selectedFolder && (
+            <Text style={styles.folderLabel} numberOfLines={1}>
+              {selectedFolder.name}
+            </Text>
+          )}
+        </Pressable> */}
         <Pressable
           style={[styles.iconButton, styles.saveButton]}
           onPress={handleAdd}
@@ -283,6 +249,23 @@ const styles = StyleSheet.create({
   saveButton: {
     backgroundColor: "#9b4d75",
     borderColor: "#9b4d75",
+  },
+  folderButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingHorizontal: 12,
+    height: 38,
+    borderRadius: 12,
+    backgroundColor: "#12121e",
+    borderWidth: 1,
+    borderColor: "#2a2a44",
+  },
+  folderLabel: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: "#9b4d75",
+    maxWidth: 80,
   },
   imagePicker: {
     width: "100%",

@@ -61,56 +61,66 @@ const VerifyScreen = () => {
       router.replace("/signIn");
     }
 
-    setLoading(true);
-    const { error } = await supabase.auth.verifyOtp({
-      email,
-      token,
-      type: verificationType as any,
-    });
-    setLoading(false);
+    try {
+      setLoading(true);
+      const { error } = await supabase.auth.verifyOtp({
+        email,
+        token,
+        type: verificationType as any,
+      });
 
-    if (error) {
-      console.log("Error in email verification:", error.message);
-      // Toast.show({
-      //   type: "error",
-      //   text1: error.message || "Verification failed. Please try again.",
-      // });
-      setError(error.message || "Verification failed. Please try again.");
-      handleClear();
-      return;
+      if (error) {
+        console.log("Error in email verification:", error.message);
+        setError(error.message || "Verification failed. Please try again.");
+        handleClear();
+        return;
+      }
+
+      Toast.show({
+        type: "success",
+        text1: "email verified",
+      });
+
+      router.replace("/signIn");
+    } catch (error: any) {
+      if (error?.message?.toLowerCase().includes("network")) {
+        setError("You're offline! Check your internet connection.");
+      } else {
+        setError("Something went wrong! Please try again.");
+      }
+    } finally {
+      setLoading(false);
     }
-
-    Toast.show({
-      type: "success",
-      text1: "email verified",
-    });
-
-    router.replace("/signIn");
   };
 
   const handleResend = async () => {
-    handleClear();
-    setLoading(true);
-    const { error } = await supabase.auth.resend({
-      type: verificationType as any,
-      email,
-    });
-    setLoading(false);
+    try {
+      handleClear();
+      setLoading(true);
+      const { error } = await supabase.auth.resend({
+        type: verificationType as any,
+        email,
+      });
 
-    if (error) {
-      console.log("Error resending code:", error.message);
-      // Toast.show({
-      //   type: "error",
-      //   text1: error.message || "Failed to resend. Please try again.",
-      // });
-      setError(error.message || "Failed to resend. Please try again.");
-      return;
+      if (error) {
+        console.log("Error resending code:", error.message);
+        setError(error.message || "Failed to resend. Please try again.");
+        return;
+      }
+
+      Toast.show({
+        type: "success",
+        text1: "Passcode resent. Please check your email.",
+      });
+    } catch (error: any) {
+      if (error?.message?.toLowerCase().includes("network")) {
+        setError("You're offline! Check your internet connection.");
+      } else {
+        setError("Something went wrong! Please try again.");
+      }
+    } finally {
+      setLoading(false);
     }
-
-    Toast.show({
-      type: "success",
-      text1: "Passcode resent. Please check your email.",
-    });
   };
 
   return (

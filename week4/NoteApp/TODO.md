@@ -10,4 +10,4 @@ POLISHING
 ASK
 secure store //Value being stored in SecureStore is larger than 2048 bytes and it may not be stored successfully. In a future SDK version, this call may throw an error.
 
-//manually create local.properties?
+1when network error google sign in without showing pop up to choose accounts from

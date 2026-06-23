@@ -7,6 +7,7 @@ import {
 } from "react-native";
 import { router } from "expo-router";
 import { signInWithGoogle } from "@/lib/googleSignin";
+import Toast from "react-native-toast-message";
 
 export function GoogleSignInButton() {
   const [loading, setLoading] = useState(false);
@@ -20,6 +21,10 @@ export function GoogleSignInButton() {
       }
     } catch (e) {
       // already logged in googleSignIn.ts
+      Toast.show({
+        type: "error",
+        text1: "Error signing in ",
+      });
     } finally {
       setLoading(false);
     }
