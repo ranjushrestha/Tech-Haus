@@ -10,18 +10,18 @@ import {
   View,
 } from "react-native";
 import React, { useState } from "react";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { supabase } from "@/lib/supabase";
 import { useForm, Controller } from "react-hook-form";
 import Toast from "react-native-toast-message";
+import Button from "@/components/Button";
 
-type FormData = {
+interface FormData {
   email: string;
   password: string;
   confirmPassword: string;
-};
+}
 
 const signUp = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -104,9 +104,13 @@ const signUp = () => {
         pathname: "/verifyScreen",
         params: { emailAddress: formData.email, type: "signup" },
       });
-    } catch (err) {
-      console.log("CATCH ERROR:", err);
-      setSignUpError("Something went wrong. Please try again.");
+    } catch (error: any) {
+      console.log("CATCH ERROR:", error);
+      if (error?.message?.toLowerCase().includes("network")) {
+        setSignUpError("You're offline! Check your internet connection.");
+      } else {
+        setSignUpError("Something went wrong. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
@@ -294,24 +298,12 @@ const signUp = () => {
                 )}
               />
 
-              <Pressable
-                style={[styles.button, loading && { opacity: 0.6 }]}
+              <Button
+                loading={loading}
                 onPress={handleSubmit(onSubmit)}
-              >
-                {loading ? (
-                  <ActivityIndicator color="white" />
-                ) : (
-                  <Text style={styles.buttonText}>Create Account</Text>
-                )}
-              </Pressable>
+                buttonText="Create Account"
+              />
             </View>
-
-            {/* <View style={styles.footer}>
-              <Text style={styles.footerText}>Already have an account?</Text>
-              <Pressable onPress={() => router.push("/signIn")}>
-                <Text style={styles.footerLink}>Sign In</Text>
-              </Pressable>
-            </View> */}
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -455,21 +447,6 @@ const styles = StyleSheet.create({
   eyeContainer: {
     paddingHorizontal: 14,
     paddingVertical: 14,
-  },
-
-  button: {
-    backgroundColor: "#9b4d75",
-    paddingVertical: 16,
-    borderRadius: 14,
-    alignItems: "center",
-    marginTop: 12,
-  },
-
-  buttonText: {
-    color: "#ffffff",
-    fontSize: 16,
-    fontWeight: "700",
-    letterSpacing: 0.3,
   },
 
   footer: {

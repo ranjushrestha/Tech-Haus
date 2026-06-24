@@ -2,11 +2,11 @@ import { StyleProp, StyleSheet, Text, View, ViewStyle } from "react-native";
 import React from "react";
 import { Ionicons } from "@expo/vector-icons";
 
-type Props = {
+interface Props {
   emptyTitle: string;
   emptyText: string;
   emptyStyle?: StyleProp<ViewStyle>;
-};
+}
 
 const EmptyState = ({ emptyTitle, emptyText, emptyStyle }: Props) => {
   return (

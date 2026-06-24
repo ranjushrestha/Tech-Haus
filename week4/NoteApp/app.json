@@ -4,8 +4,9 @@
     "slug": "NoteApp",
     "version": "1.0.0",
     "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
     "scheme": "noteapp",
-    "userInterfaceStyle": "automatic",
+    "userInterfaceStyle": "dark",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true
@@ -13,7 +14,11 @@
     "android": {
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.notes.app.ranju"
+      "package": "com.notes.app.ranju",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "backgroundColor": "#050508"
+      }
     },
     "web": {
       "output": "static"
@@ -22,7 +27,15 @@
       "expo-router",
       "expo-sqlite",
       "@react-native-google-signin/google-signin",
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/splash-icon.png",
+          "resizeMode": "contain",
+          "backgroundColor": "#050508"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

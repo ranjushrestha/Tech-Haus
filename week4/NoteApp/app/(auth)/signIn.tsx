@@ -16,11 +16,13 @@ import { supabase } from "@/lib/supabase";
 import { Controller, useForm } from "react-hook-form";
 import { useStore } from "@/store/useStore";
 import { GoogleSignInButton } from "@/components/GoogleSigninButton";
+import Button from "@/components/Button";
+import Toast from "react-native-toast-message";
 
-type FormData = {
+interface FormData {
   email: string;
   password: string;
-};
+}
 
 const SignIn = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -42,42 +44,53 @@ const SignIn = () => {
   const setUserData = useStore((state) => state.setUserData);
 
   const onSubmit = async (data: FormData) => {
-    setAuthError("");
-    setLoading(true);
+    try {
+      setAuthError("");
+      setLoading(true);
 
-    const { error, data: supaBaseUser } =
-      await supabase.auth.signInWithPassword({
-        email: data.email.trim(),
-        password: data.password,
-      });
-
-    console.log("DATA:", supaBaseUser);
-
-    if (error) {
-      if (error.message.includes("confirmed")) {
-        // setAuthError("Email not confirmed");
-        router.replace({
-          pathname: "/verifyScreen",
-          params: { emailAddress: data.email, type: "signup" },
+      const { error, data: supaBaseUser } =
+        await supabase.auth.signInWithPassword({
+          email: data.email.trim(),
+          password: data.password,
         });
-      } else {
-        setAuthError("Invalid email or password");
+
+      console.log("DATA:", supaBaseUser);
+
+      if (error) {
+        if (error?.message?.toLowerCase().includes("network")) {
+          Toast.show({
+            type: "error",
+            text1: "You're offline! Check your internet connection.",
+          });
+        } else if (error.message.includes("confirmed")) {
+          router.replace({
+            pathname: "/verifyScreen",
+            params: { emailAddress: data.email, type: "signup" },
+          });
+        } else {
+          Toast.show({
+            type: "error",
+            text1: "Invalid email or password",
+          });
+        }
+
+        // console.log("Login error:", error.message);
+
+        return;
       }
 
-      console.log("Login error:", error.message);
-      setLoading(false);
-      return;
-    }
-
-    if (supaBaseUser.user) {
       setUserData(supaBaseUser.user);
+
+      reset();
+      setLoading(false);
+      router.replace("/list");
+
+      console.log("login success");
+    } catch (error: any) {
+      setAuthError("Something went wrong! Please try again.");
+    } finally {
+      setLoading(false);
     }
-
-    reset();
-    setLoading(false);
-    router.replace("/list");
-
-    console.log("login success");
   };
 
   return (
@@ -193,17 +206,11 @@ const SignIn = () => {
                 )}
               />
 
-              <Pressable
-                style={[styles.button, loading && styles.buttonDisabled]}
+              <Button
+                loading={loading}
                 onPress={handleSubmit(onSubmit)}
-                disabled={loading}
-              >
-                {loading ? (
-                  <ActivityIndicator color="#fff" />
-                ) : (
-                  <Text style={styles.buttonText}>Sign In</Text>
-                )}
-              </Pressable>
+                buttonText="Sign in"
+              />
             </View>
 
             <View style={styles.dividerRow}>
@@ -363,25 +370,6 @@ const styles = StyleSheet.create({
   eyeContainer: {
     paddingHorizontal: 14,
     paddingVertical: 14,
-  },
-
-  button: {
-    backgroundColor: "#9b4d75",
-    paddingVertical: 16,
-    borderRadius: 14,
-    alignItems: "center",
-    marginTop: 12,
-  },
-
-  buttonDisabled: {
-    opacity: 0.7,
-  },
-
-  buttonText: {
-    color: "#ffffff",
-    fontSize: 16,
-    fontWeight: "700",
-    letterSpacing: 0.3,
   },
 
   dividerRow: {

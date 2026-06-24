@@ -37,24 +37,36 @@ export async function signInWithGoogle() {
     });
 
     console.log("GOOGLE DATA:", data);
+
     console.log("GOOGLE ERROR:", error);
 
     if (error) throw error;
     return data;
   } catch (error: any) {
+    console.log("ERROR OBJECT:", error);
+    console.log("ERROR CODE:", error?.code);
+    console.log("ERROR MESSAGE:", error?.message);
     if (error.code === statusCodes.SIGN_IN_CANCELLED) {
       console.log("Cancelled");
     } else if (error.code === statusCodes.IN_PROGRESS) {
       console.log("Already in progress");
+    } else if (error?.message?.toLowerCase().includes("network")) {
+      // console.error("Google sign in error:", error);
+      Toast.show({
+        type: "error",
+        text1: "You're offline! Check your internet connection.",
+      });
     } else {
-      console.error("Google sign in error:", error);
-      throw error;
+      Toast.show({
+        type: "error",
+        text1: "Something went wrong! Please try again.",
+      });
     }
   }
 }
 
 //if you dont signOut from google then existing signed in user will silently get signed in without showing pop up for other google account
-export async function signOutFromGoogle() {
+export async function signOutFunc() {
   try {
     await GoogleSignin.signOut();
   } catch (e) {

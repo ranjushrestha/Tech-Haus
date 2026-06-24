@@ -9,20 +9,26 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
-type Props = {
+interface Props {
   visible: boolean;
   onClose: () => void;
   onConfirm: () => void;
   noteTitle?: string;
   loading?: boolean;
-};
+  confirmTitle: string;
+  description: string;
+  confrimText: string;
+}
 
-const DeleteModal = ({
+const ConfirmDialogue = ({
   visible,
   onClose,
   onConfirm,
   noteTitle,
   loading,
+  confirmTitle,
+  description,
+  confrimText,
 }: Props) => {
   return (
     <Modal
@@ -37,10 +43,10 @@ const DeleteModal = ({
             <View style={styles.iconContainer}>
               <Ionicons name="trash-outline" size={24} color="#9b4d75" />
             </View>
-            <Text style={styles.title}>Delete Note</Text>
+            <Text style={styles.title}>{confirmTitle}</Text>
             <Text style={styles.message}>
-              Are you sure you want to delete
-              {noteTitle ? ` "${noteTitle}"` : " this note"}?
+              {description}
+              {noteTitle ? ` "${noteTitle}"` : ""}
             </Text>
             <View style={styles.actions}>
               <Pressable
@@ -51,14 +57,14 @@ const DeleteModal = ({
                 <Text style={styles.cancelText}>Cancel</Text>
               </Pressable>
               <Pressable
-                style={[styles.deleteButton, loading && { opacity: 0.6 }]}
+                style={[styles.confirmButton, loading && { opacity: 0.6 }]}
                 onPress={onConfirm}
                 disabled={loading}
               >
                 {loading ? (
                   <ActivityIndicator size="small" color="white" />
                 ) : (
-                  <Text style={styles.deleteText}>Delete</Text>
+                  <Text style={styles.confirmText}>{confrimText}</Text>
                 )}
               </Pressable>
             </View>
@@ -69,7 +75,7 @@ const DeleteModal = ({
   );
 };
 
-export default DeleteModal;
+export default ConfirmDialogue;
 
 const styles = StyleSheet.create({
   overlay: {
@@ -135,14 +141,14 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#8888bb",
   },
-  deleteButton: {
+  confirmButton: {
     flex: 1,
     paddingVertical: 12,
     borderRadius: 12,
     backgroundColor: "#9b4d75",
     alignItems: "center",
   },
-  deleteText: {
+  confirmText: {
     fontSize: 15,
     fontWeight: "600",
     color: "#ffffff",

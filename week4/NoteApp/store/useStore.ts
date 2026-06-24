@@ -7,7 +7,7 @@ type State = {
 };
 
 type Action = {
-  setUserData: (user: User | null) => void;
+  setUserData: (user: User | null) => void; //doesnt return any value
   setAuthLoading: (loading: boolean) => void;
 };
 

@@ -6,25 +6,25 @@ import {
   Platform,
   Pressable,
   RefreshControl,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
   View,
 } from "react-native";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { router, useFocusEffect } from "expo-router";
 import { supabase } from "@/lib/supabase";
 import { Ionicons } from "@expo/vector-icons";
 import NoteBox from "@/components/NoteBox";
-import DeleteModal from "@/components/DeleteModal";
-import SignOutModal from "@/components/SignOutModal";
+import ConfirmDialogue from "@/components/ConfirmDialogue";
 import { useStore } from "@/store/useStore";
 import { SafeAreaView } from "react-native-safe-area-context";
 import EmptyState from "@/components/EmptyState";
 import { deleteNote } from "@/lib/deleteNote";
 import Toast from "react-native-toast-message";
 import { useDebounce } from "@/hooks/useDebounce";
-import { signOutFromGoogle } from "@/lib/googleSignin";
+import { signOutFunc } from "@/lib/googleSignin";
 
 type Note = {
   id: string;
@@ -46,8 +46,9 @@ const Index = () => {
   const [inputText, setInputText] = useState("");
   const [signOutModalVisible, setSignOutModalVisible] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
+  const [userName, setUserName] = useState("");
 
-  const { user } = useStore();
+  const user = useStore((state) => state.user);
 
   // Fetch all notes for the logged-in user, ordered newest first
   const fetchNotes = useCallback(async () => {
@@ -105,27 +106,11 @@ const Index = () => {
     setInputText(text);
     debounceSearch(text);
   };
-  // const getPathFromUrl = (url: string | null) => {
-  //   if (!url) return null;
-
-  //   const path = url.split("/note-images/");
-  //   return path.length > 1 ? path[1] : null;
-  // };
 
   // Delete note and its image from storage
+
   const handleDelete = async (item: Note) => {
     setDeleting(true);
-
-    // const oldPath = getPathFromUrl(item.image_url || null);
-    // if (oldPath) {
-    //   const { error: deleteError } = await supabase.storage
-    //     .from("note-images")
-    //     .remove([oldPath]);
-
-    //   if (deleteError) {
-    //     console.log("Error deleting image in note list:", deleteError.message);
-    //   }
-    // }
 
     const result = await deleteNote(item.id, item.image_url);
 
@@ -160,10 +145,14 @@ const Index = () => {
 
   const handleSignOut = async () => {
     setSigningOut(true);
-    const { error } = await signOutFromGoogle();
+    const { error } = await signOutFunc();
 
     if (error) {
       console.log("Sign out error:", error.message);
+      Toast.show({
+        type: "error",
+        text1: "Error logging out",
+      });
       setSigningOut(false);
       setSignOutModalVisible(false);
       return;
@@ -174,13 +163,32 @@ const Index = () => {
     router.replace("/signIn");
   };
 
+  //Get user name
+  useEffect(() => {
+    if (!user) return;
+    const provider = user.app_metadata.provider;
+    if (provider === "google") {
+      setUserName(user.user_metadata?.full_name ?? "");
+    } else if (provider === "email") {
+      console.log("Email name:", user?.email);
+      setUserName(user?.email?.split("@")[0] ?? "");
+    }
+  }, [user]);
+
   const renderItem = ({ item }: { item: Note }) => {
     return (
       <Pressable onPress={() => handleView(item)} style={styles.card}>
         <View style={styles.cardContent}>
           <NoteBox item={item} />
 
-          <DeleteModal
+          <ConfirmDialogue
+            confirmTitle="Delete"
+            description={
+              item.title
+                ? "Are you sure you want to delete"
+                : "Are you sure you want to delete this note?"
+            }
+            confrimText="Delete"
             visible={deletingNote?.id === item.id}
             onClose={() => {
               setDeletingNote(null);
@@ -225,7 +233,10 @@ const Index = () => {
 
   return (
     <View style={styles.container}>
-      <SignOutModal
+      <ConfirmDialogue
+        confirmTitle="Sign Out"
+        confrimText="Sign Out"
+        description=" Are you sure you want to sign out?"
         visible={signOutModalVisible}
         onClose={() => {
           setSignOutModalVisible(false);
@@ -243,19 +254,29 @@ const Index = () => {
             {notes.length} {notes.length === 1 ? "note" : "notes"} total
           </Text>
         </View>
-        <Pressable
-          style={styles.signOutButton}
-          onPress={() => setSignOutModalVisible(true)}
+
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "center",
+            alignItems: "center",
+            gap: 8,
+          }}
         >
-          <Ionicons name="log-out-outline" size={20} color="#ffffff" />
-        </Pressable>
+          <Text style={{ color: "#9b4d75", fontSize: 20, fontWeight: "bold" }}>
+            {userName.split(" ")[0] || ""}
+          </Text>
+          <Pressable
+            style={styles.signOutButton}
+            onPress={() => setSignOutModalVisible(true)}
+          >
+            <Ionicons name="log-out-outline" size={20} color="#ffffff" />
+          </Pressable>
+        </View>
       </View>
 
       {/* Search bar */}
-      {/* <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={{ flex: 1 }}
-      > */}
+
       <View style={styles.searchBar}>
         <Ionicons name="search" size={16} color="#55557a" />
         <TextInput
@@ -267,7 +288,10 @@ const Index = () => {
         />
         {searchTerm.length > 0 && (
           <Pressable
-            onPress={() => setSearchTerm("")}
+            onPress={() => {
+              setSearchTerm("");
+              setInputText("");
+            }}
             style={styles.clearButton}
           >
             <Ionicons name="close-circle" size={18} color="#55557a" />
@@ -276,7 +300,6 @@ const Index = () => {
       </View>
 
       <FlatList
-        // style={{ flex: 1 }}
         data={filteredNotes}
         keyExtractor={(item) => item.id}
         showsVerticalScrollIndicator={false}
@@ -320,7 +343,6 @@ const Index = () => {
         }
         renderItem={renderItem}
       />
-      {/* </KeyboardAvoidingView> */}
 
       {/* Floating create button */}
       <Pressable
@@ -388,6 +410,36 @@ const styles = StyleSheet.create({
     color: "#55557a",
     marginTop: 2,
     fontWeight: "500",
+  },
+  categoryContainer: {
+    marginBottom: 16,
+  },
+  categoryScroll: {
+    flexDirection: "row",
+    gap: 8,
+  },
+  categoryPill: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: "#12121e",
+    borderWidth: 1,
+    borderColor: "#2a2a44",
+  },
+  categoryPillActive: {
+    backgroundColor: "#9b4d75",
+    borderColor: "#9b4d75",
+  },
+  categoryText: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: "#8888bb",
+  },
+  categoryTextActive: {
+    color: "#ffffff",
   },
   searchBar: {
     flexDirection: "row",
