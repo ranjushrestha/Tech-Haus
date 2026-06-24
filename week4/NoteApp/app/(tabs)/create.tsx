@@ -26,7 +26,6 @@ const CreateNote = () => {
   const [saving, setSaving] = useState(false);
 
   const user = useStore((state) => state.user);
-  const selectedFolder = useStore((state) => state.selectedFolder);
 
   // Step 1: Ask for permission to access the photo libraryr
   const requestPermissions = async () => {

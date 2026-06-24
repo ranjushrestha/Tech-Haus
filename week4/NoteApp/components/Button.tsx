@@ -7,11 +7,11 @@ import {
 } from "react-native";
 import React from "react";
 
-type Props = {
+interface Props {
   loading: boolean;
-  onPress: () => void;
+  onPress: () => void; //updating state - side effect; doesnt return value
   buttonText: string;
-};
+}
 const Button = ({ loading, onPress, buttonText }: Props) => {
   return (
     <Pressable

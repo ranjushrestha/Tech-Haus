@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
-type Props = {
+interface Props {
   visible: boolean;
   onClose: () => void;
   onConfirm: () => void;
@@ -18,7 +18,7 @@ type Props = {
   confirmTitle: string;
   description: string;
   confrimText: string;
-};
+}
 
 const ConfirmDialogue = ({
   visible,

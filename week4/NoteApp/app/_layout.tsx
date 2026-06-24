@@ -9,7 +9,6 @@ import { StatusBar } from "expo-status-bar";
 import { configureGoogleSignIn } from "@/lib/googleSignin";
 import { Session } from "@supabase/supabase-js";
 import * as SplashScreen from "expo-splash-screen";
-// import NetInfo from "@react-native-community/netinfo";
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
@@ -98,7 +97,7 @@ export default function RootLayout() {
             } = await supabase.auth.getUser();
             if (error || !user) {
               console.log("[AppState active] getUser error -> signOut", error);
-              await supabase.auth.signOut({ scope: "local" });
+              await supabase.auth.signOut();
               setUserData(null);
             }
           }

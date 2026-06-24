@@ -14,7 +14,6 @@ import { router, useLocalSearchParams } from "expo-router";
 import { supabase } from "@/lib/supabase";
 import Toast from "react-native-toast-message";
 import OTPTextInput from "react-native-otp-textinput";
-import { Ionicons } from "@expo/vector-icons";
 
 const VerifyScreen = () => {
   const { emailAddress, type } = useLocalSearchParams();

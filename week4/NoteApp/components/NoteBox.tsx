@@ -1,13 +1,13 @@
 import { StyleSheet, Text, View } from "react-native";
 import React from "react";
 
-type Note = {
+interface Note {
   id: string;
   title: string;
   content: string;
   user_id?: string;
   created_at?: string;
-};
+}
 const NoteBox = ({ item }: { item: Note }) => {
   return (
     <View style={styles.noteBox}>

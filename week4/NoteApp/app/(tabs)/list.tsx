@@ -48,9 +48,6 @@ const Index = () => {
   const [signingOut, setSigningOut] = useState(false);
   const [userName, setUserName] = useState("");
 
-  const [category, setCategory] = useState("all");
-  const [createCategory, setreateCategory] = useState("");
-
   const user = useStore((state) => state.user);
 
   // Fetch all notes for the logged-in user, ordered newest first
@@ -94,29 +91,9 @@ const Index = () => {
   }, []);
 
   // Filter notes by search term (title only)
-  // const filteredNotes = notes.filter((note) =>
-  //   note.title.toLowerCase().includes(searchTerm.toLowerCase()),
-  // );
-
-  const categories = ["all", "random"];
-
-  const filteredNotes = [...notes].filter((note) => {
-    const matchesSearch = note.title
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase());
-    if (category === "all") return matchesSearch;
-    if (category === "random") {
-      const randomIds = new Set(
-        [...notes]
-          .sort(() => Math.random() - 0.5)
-          .slice(0, 5)
-          .map((n) => n.id),
-      );
-
-      return matchesSearch && randomIds.has(note.id);
-    }
-    return matchesSearch;
-  });
+  const filteredNotes = notes.filter((note) =>
+    note.title.toLowerCase().includes(searchTerm.toLowerCase()),
+  );
 
   const debounceSearch = useDebounce(
     useCallback((text: string) => {
@@ -320,49 +297,6 @@ const Index = () => {
             <Ionicons name="close-circle" size={18} color="#55557a" />
           </Pressable>
         )}
-      </View>
-
-      {/* Category filter */}
-      <View style={styles.categoryContainer}>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.categoryScroll}
-        >
-          {categories.map((cat) => {
-            const isActive = category === cat;
-            const icon =
-              cat === "all"
-                ? "grid-outline"
-                : cat === "random"
-                  ? "shuffle-outline"
-                  : "create";
-            return (
-              <Pressable
-                key={cat}
-                style={[
-                  styles.categoryPill,
-                  isActive && styles.categoryPillActive,
-                ]}
-                onPress={() => setCategory(cat)}
-              >
-                <Ionicons
-                  name={icon}
-                  size={14}
-                  color={isActive ? "#ffffff" : "#8888bb"}
-                />
-                <Text
-                  style={[
-                    styles.categoryText,
-                    isActive && styles.categoryTextActive,
-                  ]}
-                >
-                  {cat.charAt(0).toUpperCase() + cat.slice(1)}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </ScrollView>
       </View>
 
       <FlatList

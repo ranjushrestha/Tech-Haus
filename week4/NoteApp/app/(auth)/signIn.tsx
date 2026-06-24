@@ -19,10 +19,10 @@ import { GoogleSignInButton } from "@/components/GoogleSigninButton";
 import Button from "@/components/Button";
 import Toast from "react-native-toast-message";
 
-type FormData = {
+interface FormData {
   email: string;
   password: string;
-};
+}
 
 const SignIn = () => {
   const [showPassword, setShowPassword] = useState(false);

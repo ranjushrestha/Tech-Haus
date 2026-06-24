@@ -10,7 +10,6 @@ import {
   View,
 } from "react-native";
 import React, { useState } from "react";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { supabase } from "@/lib/supabase";
@@ -18,11 +17,11 @@ import { useForm, Controller } from "react-hook-form";
 import Toast from "react-native-toast-message";
 import Button from "@/components/Button";
 
-type FormData = {
+interface FormData {
   email: string;
   password: string;
   confirmPassword: string;
-};
+}
 
 const signUp = () => {
   const [showPassword, setShowPassword] = useState(false);
